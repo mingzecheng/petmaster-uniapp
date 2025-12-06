@@ -33,6 +33,21 @@ $pet-bg-hover: #F9FAFB;
 /* 文本体系 */
 $pet-text-main: #1A1A1A;
 /* 主要文字：近黑 */
+$pet-text-secondary: #606266;
+/* 次要文字：深灰 */
+$pet-text-placeholder: #909399;
+/* 占位文字：浅灰 */
+$pet-text-disabled: #C0C4CC;
+/* 禁用文字：更浅灰 */
+$pet-text-on-primary: #1A1A1A;
+/* 主色上的文字：深黑 */
+$pet-text-on-secondary: #FFFFFF;
+/* 辅色上的文字：纯白 */
+$pet-border: #E4E7ED;
+/* 边框颜色 */
+$pet-border-light: #EBEEF5;
+/* 浅边框颜色 */
+
 $pet-shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 $pet-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 $pet-shadow-lg: 0 8rpx 30rpx rgba(0, 0, 0, 0.08);

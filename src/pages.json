@@ -1,0 +1,110 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "PetMaster",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/index",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/product/list",
+			"style": {
+				"navigationBarTitleText": "商品列表"
+			}
+		},
+		{
+			"path": "pages/product/detail",
+			"style": {
+				"navigationBarTitleText": "商品详情"
+			}
+		},
+		{
+			"path": "pages/pet/index",
+			"style": {
+				"navigationBarTitleText": "我的宠物"
+			}
+		},
+		{
+			"path": "pages/pet/detail",
+			"style": {
+				"navigationBarTitleText": "宠物详情"
+			}
+		},
+		{
+			"path": "pages/pet/add",
+			"style": {
+				"navigationBarTitleText": "添加宠物"
+			}
+		},
+		{
+			"path": "pages/appointment/list",
+			"style": {
+				"navigationBarTitleText": "我的预约"
+			}
+		},
+		{
+			"path": "pages/appointment/create",
+			"style": {
+				"navigationBarTitleText": "预约服务"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationBarTitleText": "个人中心",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/member/index",
+			"style": {
+				"navigationBarTitleText": "我的会员卡"
+			}
+		},
+		{
+			"path": "pages/member/recharge",
+			"style": {
+				"navigationBarTitleText": "会员充值"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "PetMaster",
+		"navigationBarBackgroundColor": "#FFD600",
+		"backgroundColor": "#FFFDE7",
+		"backgroundTextStyle": "dark"
+	},
+	"tabBar": {
+		"color": "#757575",
+		"selectedColor": "#FFAB00",
+		"borderStyle": "white",
+		"backgroundColor": "#FFFFFF",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/product/list",
+				"text": "商品"
+			},
+			{
+				"pagePath": "pages/pet/index",
+				"text": "宠物"
+			},
+			{
+				"pagePath": "pages/mine/index",
+				"text": "我的"
+			}
+		]
+	}
+}

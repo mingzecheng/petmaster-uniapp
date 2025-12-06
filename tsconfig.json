@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "types": [
+      "@dcloudio/types"
+    ],
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "strict": true,
+    "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

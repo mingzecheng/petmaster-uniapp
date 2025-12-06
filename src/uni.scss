@@ -1,0 +1,91 @@
+/**
+ * PetMaster 用户端小程序全局样式变量
+ * 简约、专业、整齐的活力黄主题风格
+ */
+
+/* ========== 核心色板 (Color Palette) ========== */
+
+/* 主色：活力黄 (Vibrant Yellow) - 保持品牌识别度 */
+$pet-primary: #FFD600;
+$pet-primary-light: #FFE57F;
+$pet-primary-dark: #FFAB00;
+$pet-primary-fade: rgba(255, 214, 0, 0.1);
+
+/* 辅色：专业蓝 (Professional Blue) - 用于链接、选中态 */
+$pet-secondary: #2979FF;
+$pet-secondary-dark: #1565C0;
+$pet-secondary-fade: rgba(41, 121, 255, 0.08);
+
+/* 功能色 */
+$pet-success: #00C853;
+$pet-warning: #FF9100;
+$pet-danger: #FF3D00;
+$pet-info: #00B0FF;
+
+/* 背景体系 */
+$pet-bg-base: #F5F7FA;
+/* 页面背景：浅灰蓝，更现代 */
+$pet-bg-card: #FFFFFF;
+/* 卡片背景：纯白 */
+$pet-bg-hover: #F9FAFB;
+/* 悬停/点击背景 */
+
+/* 文本体系 */
+$pet-text-main: #1A1A1A;
+/* 主要文字：近黑 */
+$pet-shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$pet-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+$pet-shadow-lg: 0 8rpx 30rpx rgba(0, 0, 0, 0.08);
+$pet-shadow-float: 0 12rpx 40rpx rgba(255, 214, 0, 0.2);
+/* 悬浮操作按钮阴影 */
+
+/* 倒角 (Radius) */
+$pet-radius-sm: 8rpx;
+$pet-radius: 16rpx;
+$pet-radius-lg: 24rpx;
+$pet-radius-xl: 32rpx;
+$pet-radius-full: 9999rpx;
+
+/* ========== uni-app 默认变量覆盖 ========== */
+
+/* 行为相关颜色 */
+$uni-color-primary: $pet-primary;
+$uni-color-success: $pet-success;
+$uni-color-warning: $pet-warning;
+$uni-color-error: $pet-danger;
+
+/* 文字基本颜色 */
+$uni-text-color: $pet-text-main;
+$uni-text-color-inverse: #fff;
+$uni-text-color-grey: $pet-text-secondary;
+$uni-text-color-placeholder: $pet-text-placeholder;
+$uni-text-color-disable: $pet-text-disabled;
+
+/* 背景颜色 */
+$uni-bg-color: $pet-bg-base;
+$uni-bg-color-grey: #f8f8f8;
+$uni-bg-color-hover: $pet-bg-hover;
+
+/* 边框颜色 */
+$uni-border-color: $pet-border;
+
+/* 文字尺寸 */
+$uni-font-size-sm: 24rpx;
+$uni-font-size-base: 28rpx;
+$uni-font-size-lg: 32rpx;
+$uni-font-size-xl: 36rpx;
+$uni-font-size-title: 40rpx;
+
+/* Border Radius */
+$uni-border-radius-sm: $pet-radius-sm;
+$uni-border-radius-base: $pet-radius;
+$uni-border-radius-lg: $pet-radius-lg;
+$uni-border-radius-circle: 50%;
+
+/* 间距 */
+$uni-spacing-row-sm: 16rpx;
+$uni-spacing-row-base: 24rpx;
+$uni-spacing-row-lg: 32rpx;
+$uni-spacing-col-sm: 16rpx;
+$uni-spacing-col-base: 24rpx;
+$uni-spacing-col-lg: 32rpx;

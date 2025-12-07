@@ -41,8 +41,12 @@ export interface PaymentStatusResponse {
  * 创建支付宝支付请求
  * @param data - 支付数据
  */
+/**
+ * 创建支付宝支付请求
+ * @param data - 支付数据
+ */
 export const createAlipayPayment = (data: PaymentCreate) => {
-    return post<PaymentResponse>('/payments/alipay/create/', data)
+    return post<PaymentResponse>('/payments/alipay/create', data)
 }
 
 /**
@@ -50,5 +54,5 @@ export const createAlipayPayment = (data: PaymentCreate) => {
  * @param outTradeNo - 商户订单号
  */
 export const queryPaymentStatus = (outTradeNo: string) => {
-    return get<PaymentStatusResponse>(`/payments/${outTradeNo}/status/`)
+    return get<PaymentStatusResponse>(`/payments/${outTradeNo}/status`)
 }

@@ -277,16 +277,19 @@ const goToMine = () => {
 }
 
 .status-bar {
-  background: #fff;
+  background: transparent;
 }
 
-/* 导航栏 */
+/* 导航栏 - 玻璃拟态 */
 .nav-bar {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: 20rpx 30rpx;
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
 }
 
 .nav-content {
@@ -303,12 +306,13 @@ const goToMine = () => {
 .logo-icon-small {
   width: 64rpx;
   height: 64rpx;
-  background: $pet-primary;
+  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
   border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(255, 214, 0, 0.3);
   
   text {
     font-size: 32rpx;
@@ -317,21 +321,26 @@ const goToMine = () => {
 
 .logo-text {
   font-size: 36rpx;
-  font-weight: 700;
+  font-weight: 800;
   color: $pet-text-main;
+  letter-spacing: -0.5rpx;
 }
 
 .user-area {
   width: 72rpx;
   height: 72rpx;
-  background: $pet-bg-hover;
+  background: #fff;
+  border: 2rpx solid $pet-bg-hover;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: $pet-shadow-sm;
+  transition: all 0.3s;
   
   &:active {
-    background: #E0E0E0;
+    transform: scale(0.95);
+    background: $pet-bg-hover;
   }
 }
 
@@ -344,46 +353,69 @@ const goToMine = () => {
   height: calc(100vh - 180rpx);
 }
 
-/* 欢迎横幅 */
+/* 欢迎横幅 - 更丰富的视觉 */
 .welcome-banner {
   margin: 30rpx;
   padding: 40rpx;
-  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
+  background: linear-gradient(120deg, $pet-primary, #FFC107);
   border-radius: $pet-radius-lg;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: $pet-shadow-lg;
+  box-shadow: 0 8rpx 32rpx rgba(255, 193, 7, 0.3);
   color: $pet-text-on-primary;
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    right: -20rpx;
+    top: -20rpx;
+    width: 200rpx;
+    height: 200rpx;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+  }
 }
 
 .banner-content {
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .banner-title {
   display: block;
-  font-size: 36rpx;
-  font-weight: 700;
+  font-size: 38rpx;
+  font-weight: 800;
   margin-bottom: 12rpx;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
 }
 
 .banner-desc {
   display: block;
   font-size: 26rpx;
   opacity: 0.9;
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
+  font-weight: 500;
 }
 
 .banner-btn {
   display: inline-block;
   background: #fff;
-  padding: 12rpx 30rpx;
-  border-radius: 30rpx;
+  padding: 14rpx 36rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+  
+  &:active {
+    transform: scale(0.95);
+  }
   
   text {
-    font-size: 24rpx;
-    font-weight: 600;
+    font-size: 26rpx;
+    font-weight: 700;
     color: $pet-text-main;
   }
 }
@@ -391,11 +423,15 @@ const goToMine = () => {
 .banner-image {
   width: 120rpx;
   height: 120rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 1;
+  border: 2rpx solid rgba(255,255,255,0.3);
 }
 
 .banner-emoji {
@@ -405,22 +441,22 @@ const goToMine = () => {
 /* 区块样式 */
 .section {
   padding: 0 30rpx;
-  margin-bottom: 40rpx;
+  margin-bottom: 48rpx;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
 }
 
 .section-title {
-  font-size: 32rpx;
-  font-weight: 700;
+  font-size: 34rpx;
+  font-weight: 800;
   color: $pet-text-main;
   position: relative;
-  padding-left: 20rpx;
+  padding-left: 24rpx;
   
   &::before {
     content: '';
@@ -429,15 +465,20 @@ const goToMine = () => {
     top: 50%;
     transform: translateY(-50%);
     width: 8rpx;
-    height: 32rpx;
+    height: 36rpx;
     background: $pet-primary;
     border-radius: 4rpx;
+    box-shadow: 0 2rpx 8rpx rgba(255, 214, 0, 0.4);
   }
 }
 
 .section-more {
   font-size: 26rpx;
   color: $pet-text-secondary;
+  font-weight: 500;
+  padding: 8rpx 16rpx;
+  background: #fff;
+  border-radius: 20rpx;
 }
 
 /* 服务网格 */
@@ -445,7 +486,7 @@ const goToMine = () => {
   display: flex;
   justify-content: space-between;
   background: #fff;
-  padding: 30rpx;
+  padding: 40rpx 20rpx;
   border-radius: $pet-radius-lg;
   box-shadow: $pet-shadow;
 }
@@ -453,41 +494,49 @@ const goToMine = () => {
 .service-item {
   width: 25%;
   text-align: center;
+  
+  &:active .service-icon {
+    transform: scale(0.92);
+  }
 }
 
 .service-icon {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 32rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 36rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16rpx;
+  margin: 0 auto 20rpx;
+  transition: transform 0.2s;
   
   text {
-    font-size: 44rpx;
+    font-size: 48rpx;
   }
   
-  &.icon-yellow { background: rgba(255, 214, 0, 0.15); }
-  &.icon-blue { background: rgba(41, 121, 255, 0.1); }
-  &.icon-green { background: rgba(0, 200, 83, 0.1); }
-  &.icon-orange { background: rgba(255, 109, 0, 0.1); }
+  &.icon-yellow { background: linear-gradient(135deg, #FFF8E1, #FFECB3); color: #FF6F00; }
+  &.icon-blue { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); color: #0D47A1; }
+  &.icon-green { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #1B5E20; }
+  &.icon-orange { background: linear-gradient(135deg, #FBE9E7, #FFCCBC); color: #BF360C; }
 }
 
 .service-name {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: $pet-text-main;
+  font-weight: 500;
 }
 
 /* 服务滚动 */
 .services-scroll {
   white-space: nowrap;
+  margin: 0 -30rpx;
+  width: calc(100% + 60rpx);
 }
 
 .services-wrapper {
   display: inline-flex;
   gap: 24rpx;
-  padding: 4rpx 0 20rpx;
+  padding: 4rpx 30rpx 30rpx;
 }
 
 .service-card {
@@ -498,29 +547,34 @@ const goToMine = () => {
   display: inline-block;
   box-shadow: $pet-shadow;
   vertical-align: top;
+  transition: transform 0.3s, box-shadow 0.3s;
+  
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .service-card-image {
   width: 100%;
-  height: 160rpx;
+  height: 180rpx;
   background: $pet-bg-hover;
   border-radius: $pet-radius;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 24rpx;
 }
 
 .service-emoji {
-  font-size: 64rpx;
+  font-size: 72rpx;
 }
 
 .service-card-name {
   display: block;
-  font-size: 28rpx;
+  font-size: 30rpx;
   color: $pet-text-main;
-  font-weight: 600;
-  margin-bottom: 12rpx;
+  font-weight: 700;
+  margin-bottom: 16rpx;
   white-space: normal;
 }
 
@@ -531,14 +585,14 @@ const goToMine = () => {
 }
 
 .service-card-price {
-  font-size: 30rpx;
+  font-size: 32rpx;
   color: $pet-warning;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .add-btn {
-  width: 40rpx;
-  height: 40rpx;
+  width: 48rpx;
+  height: 48rpx;
   background: $pet-primary;
   border-radius: 50%;
   display: flex;
@@ -546,38 +600,55 @@ const goToMine = () => {
   justify-content: center;
   font-size: 32rpx;
   color: $pet-text-main;
-  line-height: 1;
+  box-shadow: 0 4rpx 12rpx rgba(255, 214, 0, 0.3);
 }
 
 /* 商品网格 */
 .products-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20rpx;
+  gap: 24rpx;
 }
 
 .product-card {
-  width: calc(50% - 10rpx);
+  width: calc(50% - 12rpx);
   background: #fff;
   border-radius: $pet-radius-lg;
   overflow: hidden;
   box-shadow: $pet-shadow;
+  transition: transform 0.3s;
+  
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .product-image {
-  height: 240rpx;
+  height: 260rpx;
   background: $pet-bg-hover;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60rpx;
+    background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
+  }
 }
 
 .product-emoji {
-  font-size: 80rpx;
+  font-size: 90rpx;
+  filter: drop-shadow(0 8rpx 16rpx rgba(0,0,0,0.1));
 }
 
 .product-info {
-  padding: 20rpx;
+  padding: 24rpx;
 }
 
 .product-name {
@@ -585,7 +656,7 @@ const goToMine = () => {
   font-size: 28rpx;
   color: $pet-text-main;
   font-weight: 600;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -598,17 +669,24 @@ const goToMine = () => {
 }
 
 .product-price {
-  font-size: 32rpx;
+  font-size: 34rpx;
   color: $pet-warning;
-  font-weight: 700;
+  font-weight: 800;
+  
+  &::before {
+    content: '¥';
+    font-size: 24rpx;
+    margin-right: 2rpx;
+  }
 }
 
 .product-stock {
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: $pet-danger;
-  background: rgba(255, 23, 68, 0.1);
-  padding: 2rpx 8rpx;
+  background: rgba(255, 23, 68, 0.08);
+  padding: 4rpx 10rpx;
   border-radius: 8rpx;
+  font-weight: 500;
 }
 
 .safe-area-bottom {

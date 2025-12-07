@@ -46,6 +46,9 @@ export interface AppointmentUpdate {
 /**
  * 获取预约列表
  */
+/**
+ * 获取预约列表
+ */
 export const getAppointments = (params?: { skip?: number; limit?: number; pet_id?: number; status?: AppointmentStatus }) => {
     return get<Appointment[]>('/appointments/', params)
 }
@@ -55,7 +58,7 @@ export const getAppointments = (params?: { skip?: number; limit?: number; pet_id
  * @param appointmentId - 预约ID
  */
 export const getAppointmentDetail = (appointmentId: number) => {
-    return get<Appointment>(`/appointments/${appointmentId}/`)
+    return get<Appointment>(`/appointments/${appointmentId}`)
 }
 
 /**
@@ -72,7 +75,7 @@ export const createAppointment = (data: AppointmentCreate) => {
  * @param data - 更新数据
  */
 export const updateAppointment = (appointmentId: number, data: AppointmentUpdate) => {
-    return put<Appointment>(`/appointments/${appointmentId}/`, data)
+    return put<Appointment>(`/appointments/${appointmentId}`, data)
 }
 
 /**
@@ -80,5 +83,5 @@ export const updateAppointment = (appointmentId: number, data: AppointmentUpdate
  * @param appointmentId - 预约ID
  */
 export const cancelAppointment = (appointmentId: number) => {
-    return del(`/appointments/${appointmentId}/`)
+    return del(`/appointments/${appointmentId}`)
 }

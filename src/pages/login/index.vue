@@ -281,9 +281,10 @@ const handleSubmit = async () => {
   width: 100%;
   max-width: 640rpx;
   background: #fff;
-  border-radius: $pet-radius-lg;
+  border-radius: 40rpx;
   padding: 60rpx 40rpx;
-  box-shadow: $pet-shadow-lg;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid rgba(0, 0, 0, 0.02);
 }
 
 /* Logo区域 */
@@ -293,33 +294,47 @@ const handleSubmit = async () => {
 }
 
 .logo-icon {
-  width: 120rpx;
-  height: 120rpx;
-  background: $pet-primary;
-  border-radius: $pet-radius-lg;
+  width: 140rpx;
+  height: 140rpx;
+  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
+  border-radius: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24rpx;
-  box-shadow: 0 8rpx 24rpx rgba(255, 214, 0, 0.3);
+  margin: 0 auto 32rpx;
+  box-shadow: 0 12rpx 32rpx rgba(255, 214, 0, 0.3);
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 40rpx;
+    border: 2rpx solid rgba(255, 255, 255, 0.3);
+  }
 }
 
 .logo-emoji {
-  font-size: 64rpx;
+  font-size: 72rpx;
 }
 
 .title {
   display: block;
-  font-size: 40rpx;
-  font-weight: 700;
+  font-size: 44rpx;
+  font-weight: 800;
   color: $pet-text-main;
-  margin-bottom: 8rpx;
+  margin-bottom: 12rpx;
+  letter-spacing: -1rpx;
 }
 
 .subtitle {
   display: block;
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: $pet-text-secondary;
+  font-weight: 500;
 }
 
 /* 表单区域 */
@@ -328,24 +343,24 @@ const handleSubmit = async () => {
 }
 
 .input-group {
-  margin-bottom: 32rpx;
+  margin-bottom: 36rpx;
 }
 
 .input-label {
   display: block;
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 700;
   color: $pet-text-main;
   margin-bottom: 16rpx;
 }
 
 .input-field {
   width: 100%;
-  height: 88rpx;
+  height: 96rpx;
   background: $pet-bg-hover;
   border: 2rpx solid transparent;
-  border-radius: $pet-radius;
-  padding: 0 24rpx;
+  border-radius: 24rpx;
+  padding: 0 32rpx;
   font-size: 30rpx;
   color: $pet-text-main;
   transition: all 0.3s;
@@ -354,7 +369,7 @@ const handleSubmit = async () => {
   &:focus {
     background: #fff;
     border-color: $pet-primary;
-    box-shadow: 0 0 0 4rpx $pet-primary-fade;
+    box-shadow: 0 0 0 6rpx $pet-primary-fade;
   }
 }
 
@@ -370,35 +385,37 @@ const handleSubmit = async () => {
   position: absolute;
   right: 0;
   top: 0;
-  height: 88rpx;
-  padding: 0 24rpx;
+  height: 96rpx;
+  padding: 0 32rpx;
   display: flex;
   align-items: center;
   z-index: 2;
   
   text {
-    font-size: 24rpx;
+    font-size: 26rpx;
     color: $pet-secondary;
+    font-weight: 600;
   }
 }
 
 /* 提交按钮 */
 .submit-btn {
   width: 100%;
-  height: 96rpx;
-  line-height: 96rpx;
-  background: $pet-primary;
+  height: 100rpx;
+  line-height: 100rpx;
+  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
   border: none;
-  border-radius: $pet-radius;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: $pet-text-on-primary;
-  margin-top: 48rpx;
-  box-shadow: $pet-shadow;
+  border-radius: 50rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: $pet-text-main;
+  margin-top: 60rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 214, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
   
   &:active {
     transform: scale(0.98);
-    opacity: 0.9;
+    box-shadow: 0 4rpx 12rpx rgba(255, 214, 0, 0.2);
   }
   
   &::after {
@@ -409,7 +426,7 @@ const handleSubmit = async () => {
 /* 切换模式 */
 .switch-mode {
   text-align: center;
-  margin-top: 32rpx;
+  margin-top: 40rpx;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -424,7 +441,7 @@ const handleSubmit = async () => {
 .switch-link {
   font-size: 28rpx;
   color: $pet-secondary;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* reCAPTCHA v2 验证弹窗 */
@@ -434,8 +451,8 @@ const handleSubmit = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -444,9 +461,9 @@ const handleSubmit = async () => {
 
 .recaptcha-content {
   background: #fff;
-  border-radius: $pet-radius-lg;
-  padding: 40rpx;
-  box-shadow: $pet-shadow-lg;
+  border-radius: 32rpx;
+  padding: 48rpx;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
   width: 600rpx;
 }
 
@@ -454,20 +471,25 @@ const handleSubmit = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30rpx;
+  margin-bottom: 32rpx;
 }
 
 .recaptcha-title {
-  font-size: 32rpx;
-  font-weight: 600;
+  font-size: 34rpx;
+  font-weight: 700;
   color: $pet-text-main;
 }
 
 .recaptcha-close {
-  font-size: 40rpx;
+  font-size: 44rpx;
   color: $pet-text-secondary;
   line-height: 1;
   padding: 10rpx;
+  opacity: 0.6;
+  
+  &:active {
+    opacity: 1;
+  }
 }
 
 .recaptcha-wrapper {

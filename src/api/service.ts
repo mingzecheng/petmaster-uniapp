@@ -19,8 +19,11 @@ export interface Service {
 /**
  * 获取服务列表
  */
+/**
+ * 获取服务列表
+ */
 export const getServices = (params?: { skip?: number; limit?: number; name?: string }) => {
-    return get<Service[]>('/services/', params)
+    return get<Service[]>('/services', params)
 }
 
 /**
@@ -28,5 +31,5 @@ export const getServices = (params?: { skip?: number; limit?: number; name?: str
  * @param serviceId - 服务ID
  */
 export const getServiceDetail = (serviceId: number) => {
-    return get<Service>(`/services/${serviceId}/`)
+    return get<Service>(`/services/${serviceId}`)
 }

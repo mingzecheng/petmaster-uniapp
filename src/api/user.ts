@@ -2,7 +2,7 @@
  * @description 用户相关API
  */
 
-import { get, put } from '@/utils/request'
+import { get, put, post } from '@/utils/request'
 
 /** 用户信息 */
 export interface User {
@@ -31,7 +31,7 @@ export interface UserUpdate {
  * 获取当前用户信息
  */
 export const getCurrentUser = () => {
-    return get<User>('/users/me/')
+    return get<User>('/users/me')
 }
 
 /**
@@ -39,7 +39,7 @@ export const getCurrentUser = () => {
  * @param userId - 用户ID
  */
 export const getUserDetail = (userId: number) => {
-    return get<User>(`/users/${userId}/`)
+    return get<User>(`/users/${userId}`)
 }
 
 /**
@@ -47,5 +47,13 @@ export const getUserDetail = (userId: number) => {
  * @param data - 更新数据
  */
 export const updateCurrentUser = (data: UserUpdate) => {
-    return put<User>('/users/me/', data)
+    return put<User>('/users/me', data)
+}
+
+/**
+ * 修改密码
+ * @param data - 密码数据
+ */
+export const changePassword = (data: { old_password: string; new_password: string }) => {
+    return post<{ message: string }>('/users/me/change-password', data)
 }

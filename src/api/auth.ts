@@ -26,8 +26,8 @@ export interface UserResponse {
  * 用户登录
  * @param data - 登录数据
  */
-export const login = (data: { username: string; password: string }) => {
-    return post<LoginResponse>('/auth/login/', data)
+export const login = (data: { username: string; password: string; recaptcha_token?: string }) => {
+    return post<LoginResponse>('/auth/login', data)
 }
 
 /**
@@ -35,5 +35,5 @@ export const login = (data: { username: string; password: string }) => {
  * @param data - 注册数据
  */
 export const register = (data: { username: string; password: string; mobile?: string; email?: string }) => {
-    return post<UserResponse>('/auth/register/', data)
+    return post<UserResponse>('/auth/register', data)
 }

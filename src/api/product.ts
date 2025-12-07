@@ -20,8 +20,11 @@ export interface Product {
 /**
  * 获取商品列表
  */
+/**
+ * 获取商品列表
+ */
 export const getProducts = (params?: { skip?: number; limit?: number; category?: string; name?: string }) => {
-    return get<Product[]>('/products/', params)
+    return get<Product[]>('/products', params)
 }
 
 /**
@@ -29,5 +32,5 @@ export const getProducts = (params?: { skip?: number; limit?: number; category?:
  * @param productId - 商品ID
  */
 export const getProductDetail = (productId: number) => {
-    return get<Product>(`/products/${productId}/`)
+    return get<Product>(`/products/${productId}`)
 }

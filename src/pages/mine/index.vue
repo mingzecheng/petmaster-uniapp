@@ -183,23 +183,46 @@ const handleLogout = () => {
   padding-bottom: 40rpx;
 }
 
-/* 顶部背景 */
+/* 顶部背景 - 增加装饰 */
 .header-bg {
-  height: 320rpx;
-  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
-  border-radius: 0 0 40rpx 40rpx;
+  height: 360rpx;
+  background: linear-gradient(135deg, $pet-primary, #FFC107);
+  border-radius: 0 0 48rpx 48rpx;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 0;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    right: -60rpx;
+    top: -60rpx;
+    width: 300rpx;
+    height: 300rpx;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: -40rpx;
+    bottom: 40rpx;
+    width: 200rpx;
+    height: 200rpx;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+  }
 }
 
 /* 用户卡片 */
 .user-card {
   position: relative;
   z-index: 1;
-  padding: 140rpx 30rpx 0;
+  padding: 160rpx 30rpx 0;
   margin-bottom: 40rpx;
 }
 
@@ -207,7 +230,7 @@ const handleLogout = () => {
   background: #fff;
   border-radius: $pet-radius-lg;
   padding: 40rpx;
-  box-shadow: $pet-shadow-lg;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
 }
 
 .user-header {
@@ -217,20 +240,25 @@ const handleLogout = () => {
 }
 
 .user-avatar {
-  width: 120rpx;
-  height: 120rpx;
+  width: 128rpx;
+  height: 128rpx;
   background: $pet-bg-hover;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 30rpx;
+  margin-right: 32rpx;
   border: 4rpx solid #fff;
-  box-shadow: $pet-shadow;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .avatar-emoji {
-  font-size: 60rpx;
+  font-size: 64rpx;
 }
 
 .user-info {
@@ -239,8 +267,8 @@ const handleLogout = () => {
 
 .user-name {
   display: block;
-  font-size: 36rpx;
-  font-weight: 700;
+  font-size: 38rpx;
+  font-weight: 800;
   color: $pet-text-main;
   margin-bottom: 12rpx;
 }
@@ -253,10 +281,11 @@ const handleLogout = () => {
 .user-level-badge {
   display: inline-flex;
   align-items: center;
-  background: linear-gradient(90deg, #333, #000);
-  padding: 6rpx 20rpx;
+  background: linear-gradient(90deg, #333, #1a1a1a);
+  padding: 8rpx 24rpx;
   border-radius: 30rpx;
   gap: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
 }
 
 .level-icon {
@@ -266,7 +295,7 @@ const handleLogout = () => {
 .level-text {
   font-size: 22rpx;
   color: #FFD700;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 1rpx;
 }
 
@@ -274,16 +303,19 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding-top: 30rpx;
+  padding-top: 32rpx;
   border-top: 2rpx solid $pet-border-light;
 }
 
 .data-item {
   text-align: center;
   flex: 1;
+  padding: 10rpx 0;
+  border-radius: $pet-radius;
+  transition: background 0.2s;
   
   &:active {
-    opacity: 0.7;
+    background: $pet-bg-hover;
   }
 }
 
@@ -295,8 +327,8 @@ const handleLogout = () => {
 
 .data-value {
   display: block;
-  font-size: 36rpx;
-  font-weight: 700;
+  font-size: 40rpx;
+  font-weight: 800;
   color: $pet-text-main;
   margin-bottom: 4rpx;
 }
@@ -323,7 +355,7 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 32rpx 30rpx;
+  padding: 36rpx 30rpx;
   border-bottom: 2rpx solid $pet-border-light;
   transition: background 0.2s;
   
@@ -354,11 +386,11 @@ const handleLogout = () => {
     font-size: 36rpx;
   }
   
-  &.icon-blue { background: rgba(41, 121, 255, 0.1); }
-  &.icon-yellow { background: rgba(255, 214, 0, 0.15); }
-  &.icon-green { background: rgba(0, 200, 83, 0.1); }
-  &.icon-purple { background: rgba(156, 39, 176, 0.1); }
-  &.icon-grey { background: rgba(158, 158, 158, 0.1); }
+  &.icon-blue { background: rgba(41, 121, 255, 0.1); color: $pet-secondary; }
+  &.icon-yellow { background: rgba(255, 214, 0, 0.15); color: #FF6F00; }
+  &.icon-green { background: rgba(0, 200, 83, 0.1); color: $pet-success; }
+  &.icon-purple { background: rgba(156, 39, 176, 0.1); color: #9C27B0; }
+  &.icon-grey { background: rgba(158, 158, 158, 0.1); color: #757575; }
 }
 
 .menu-text {
@@ -374,19 +406,23 @@ const handleLogout = () => {
 
 /* 退出按钮 */
 .logout-wrapper {
-  margin-top: 40rpx;
+  margin-top: 60rpx;
+  padding-bottom: 40rpx;
 }
 
 .logout-btn {
   background: #fff;
   color: $pet-danger;
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 600;
-  border-radius: $pet-radius;
+  border-radius: 48rpx;
   box-shadow: $pet-shadow;
+  height: 96rpx;
+  line-height: 96rpx;
   
   &:active {
     background: #FFF5F5;
+    transform: scale(0.98);
   }
   
   &::after {

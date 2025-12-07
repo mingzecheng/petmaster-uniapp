@@ -57,8 +57,12 @@ export interface Transaction {
  * 获取我的会员卡
  * @param userId - 用户ID
  */
+/**
+ * 获取我的会员卡
+ * @param userId - 用户ID
+ */
 export const getMyMemberCard = (userId: number) => {
-    return get<MemberCard>(`/member_cards/users/${userId}/`)
+    return get<MemberCard>(`/member_cards/users/${userId}`)
 }
 
 /**
@@ -66,7 +70,7 @@ export const getMyMemberCard = (userId: number) => {
  * @param cardId - 会员卡ID
  */
 export const getRechargeRecords = (cardId: number) => {
-    return get<RechargeRecord[]>(`/member_cards/${cardId}/recharge_records/`)
+    return get<RechargeRecord[]>(`/member_cards/${cardId}/recharge_records`)
 }
 
 /**
@@ -75,7 +79,7 @@ export const getRechargeRecords = (cardId: number) => {
  * @param amount - 充值金额
  */
 export const createCardRechargePayment = (cardId: number, amount: number) => {
-    return post(`/member_cards/${cardId}/payment/create/`, { amount })
+    return post(`/member_cards/${cardId}/payment/create`, { amount })
 }
 
 /**
@@ -84,26 +88,26 @@ export const createCardRechargePayment = (cardId: number, amount: number) => {
  * @param outTradeNo - 订单号
  */
 export const queryRechargePaymentStatus = (cardId: number, outTradeNo: string) => {
-    return get(`/member_cards/${cardId}/payment/${outTradeNo}/status/`)
+    return get(`/member_cards/${cardId}/payment/${outTradeNo}/status`)
 }
 
 /**
  * 获取我的交易记录
  */
 export const getMyTransactions = (params?: { skip?: number; limit?: number }) => {
-    return get<Transaction[]>('/transactions/me/', params)
+    return get<Transaction[]>('/transactions/me', params)
 }
 
 /**
  * 获取我的积分
  */
 export const getMyPoints = () => {
-    return get<{ user_id: number; total_points: number }>('/transactions/me/points/')
+    return get<{ user_id: number; total_points: number }>('/transactions/me/points')
 }
 
 /**
  * 获取我的消费总额
  */
 export const getMySpending = () => {
-    return get<{ user_id: number; total_spending: number }>('/transactions/me/spending/')
+    return get<{ user_id: number; total_spending: number }>('/transactions/me/spending')
 }

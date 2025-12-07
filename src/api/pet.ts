@@ -47,6 +47,9 @@ export interface PetUpdate {
 /**
  * 获取宠物列表
  */
+/**
+ * 获取宠物列表
+ */
 export const getPets = (params?: { skip?: number; limit?: number; owner_id?: number }) => {
     return get<Pet[]>('/pets/', params)
 }
@@ -56,7 +59,7 @@ export const getPets = (params?: { skip?: number; limit?: number; owner_id?: num
  * @param petId - 宠物ID
  */
 export const getPetDetail = (petId: number) => {
-    return get<Pet>(`/pets/${petId}/`)
+    return get<Pet>(`/pets/${petId}`)
 }
 
 /**
@@ -73,7 +76,7 @@ export const createPet = (data: PetCreate) => {
  * @param data - 更新数据
  */
 export const updatePet = (petId: number, data: PetUpdate) => {
-    return put<Pet>(`/pets/${petId}/`, data)
+    return put<Pet>(`/pets/${petId}`, data)
 }
 
 /**
@@ -81,7 +84,44 @@ export const updatePet = (petId: number, data: PetUpdate) => {
  * @param petId - 宠物ID
  */
 export const deletePet = (petId: number) => {
-    return del(`/pets/${petId}/`)
+    return del(`/pets/${petId}`)
+}
+
+/**
+ * 上传宠物图片
+ * @param petId - 宠物ID
+ * @param filePath - 图片文件路径
+ */
+export const uploadPetImage = (petId: number, filePath: string) => {
+    return new Promise<Pet>((resolve, reject) => {
+        uni.uploadFile({
+            url: `${import.meta.env.VITE_API_BASE_URL}/pets/${petId}/upload-image`,
+            filePath: filePath,
+            name: 'file',
+            header: {
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+            },
+            success: (uploadFileRes) => {
+                if (uploadFileRes.statusCode === 200) {
+                    const data = JSON.parse(uploadFileRes.data)
+                    resolve(data)
+                } else {
+                    reject(new Error('上传失败'))
+                }
+            },
+            fail: (err) => {
+                reject(err)
+            }
+        })
+    })
+}
+
+/**
+ * 删除宠物图片
+ * @param petId - 宠物ID
+ */
+export const deletePetImage = (petId: number) => {
+    return del<Pet>(`/pets/${petId}/image`)
 }
 
 /** 健康记录 */
@@ -96,10 +136,62 @@ export interface HealthRecord {
     created_at: string
 }
 
+/** 健康记录创建参数 */
+export interface HealthRecordCreate {
+    pet_id: number
+    record_date: string
+    record_type: string
+    description: string
+    veterinarian?: string
+    notes?: string
+}
+
+/** 健康记录更新参数 */
+export interface HealthRecordUpdate {
+    record_date?: string
+    record_type?: string
+    description?: string
+    veterinarian?: string
+    notes?: string
+}
+
 /**
  * 获取宠物健康记录
  * @param petId - 宠物ID
  */
 export const getPetHealthRecords = (petId: number, params?: { skip?: number; limit?: number }) => {
-    return get<HealthRecord[]>(`/pets/${petId}/health-records/`, params)
+    return get<HealthRecord[]>(`/pet_health_records/pet/${petId}`, params)
+}
+
+/**
+ * 创建健康记录
+ * @param data - 记录数据
+ */
+export const createHealthRecord = (data: HealthRecordCreate) => {
+    return post<HealthRecord>('/pet_health_records', data)
+}
+
+/**
+ * 获取健康记录详情
+ * @param recordId - 记录ID
+ */
+export const getHealthRecordDetail = (recordId: number) => {
+    return get<HealthRecord>(`/pet_health_records/${recordId}`)
+}
+
+/**
+ * 更新健康记录
+ * @param recordId - 记录ID
+ * @param data - 更新数据
+ */
+export const updateHealthRecord = (recordId: number, data: HealthRecordUpdate) => {
+    return put<HealthRecord>(`/pet_health_records/${recordId}`, data)
+}
+
+/**
+ * 删除健康记录
+ * @param recordId - 记录ID
+ */
+export const deleteHealthRecord = (recordId: number) => {
+    return del(`/pet_health_records/${recordId}`)
 }

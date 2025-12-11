@@ -8,13 +8,11 @@ import { get } from '@/utils/request'
 export interface Product {
     id: number
     name: string
-    description?: string
-    price: number
-    stock: number
     category?: string
-    image_url?: string
-    is_active: boolean
+    price: number | string
+    stock: number
     created_at: string
+    updated_at: string
 }
 
 /**

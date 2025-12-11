@@ -1,102 +1,81 @@
 <template>
   <view class="home-container">
-    <!-- 顶部状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
-    <!-- 自定义导航栏 -->
-    <view class="nav-bar">
+    <!-- 玻璃态导航栏 -->
+    <view class="nav-bar glass" :style="{ paddingTop: statusBarHeight + 'px' }">
       <view class="nav-content">
-        <view class="logo-area">
-          <view class="logo-icon-small">
-            <text>🐕</text>
-          </view>
-          <text class="logo-text">PetMaster</text>
+        <view class="location-area">
+          <view class="location-icon">📍</view>
+          <text class="location-text">PetMaster 旗舰店</text>
         </view>
-        <view class="user-area" @click="goToMine">
-          <text class="user-icon">👤</text>
+        <view class="nav-right" @click="goToMine">
+          <view class="bell-icon">
+            <text>🔔</text>
+            <view class="bell-dot"></view>
+          </view>
         </view>
       </view>
     </view>
 
     <!-- 主要内容区域 -->
-    <scroll-view class="main-content" scroll-y>
-      <!-- 欢迎横幅 -->
-      <view class="welcome-banner">
-        <view class="banner-content">
-          <text class="banner-title">专业宠物护理服务</text>
-          <text class="banner-desc">为您的爱宠提供最贴心的呵护</text>
-          <view class="banner-btn" @click="goToService('appointment')">
-            <text>立即预约</text>
+    <scroll-view class="main-content" scroll-y :style="{ paddingTop: (statusBarHeight + 56) + 'px' }">
+      <!-- 宠物状态卡片 - 暗色风格 -->
+      <view class="pet-status-card" v-if="userPet" @click="goToService('pet')">
+        <view class="pet-card-content">
+          <view class="pet-info-left">
+            <view class="pet-status-badge">
+              <text class="status-label">状态</text>
+              <text class="status-value">健康状况良好</text>
+            </view>
+            <text class="pet-name">{{ userPet.name || '我的宠物' }}</text>
+            <text class="pet-desc">{{ userPet.breed || '品种' }} · {{ userPet.weight || '0' }}kg</text>
+          </view>
+          <view class="pet-avatar">
+            <text class="pet-emoji">{{ getPetEmoji(userPet.species) }}</text>
           </view>
         </view>
-        <view class="banner-image">
-          <text class="banner-emoji">🐶</text>
+      </view>
+      
+      <!-- 未登录或无宠物时显示欢迎卡片 -->
+      <view class="welcome-card" v-else @click="goToService('pet')">
+        <view class="welcome-content">
+          <text class="welcome-title">欢迎来到 PetMaster</text>
+          <text class="welcome-desc">添加您的第一只宠物</text>
+        </view>
+        <view class="welcome-icon">
+          <text>🐾</text>
         </view>
       </view>
 
-      <!-- 服务入口 -->
+      <!-- 快速服务 -->
       <view class="section">
         <view class="section-header">
-          <text class="section-title">便捷服务</text>
+          <text class="section-title">快速服务</text>
+          <text class="section-more" @click="goToServices">›</text>
         </view>
         <view class="service-grid">
-          <view class="service-item" @click="goToService('appointment')">
-            <view class="service-icon icon-yellow">
-              <text>📅</text>
+          <view 
+            v-for="service in services.slice(0, 4)" 
+            :key="service.id" 
+            class="service-card"
+            @click="goToAppointment(service)"
+          >
+            <view class="service-card-top">
+              <view class="service-icon-box" :class="getServiceColorClass(service.name)">
+                <text class="service-icon-text">{{ getServiceIcon(service.name) }}</text>
+              </view>
+              <view class="service-price-tag">
+                <text>¥{{ service.price }}</text>
+              </view>
             </view>
-            <text class="service-name">预约服务</text>
-          </view>
-          <view class="service-item" @click="goToService('pet')">
-            <view class="service-icon icon-blue">
-              <text>🐕</text>
+            <view class="service-card-bottom">
+              <text class="service-card-name">{{ service.name }}</text>
+              <text class="service-card-duration">约{{ service.duration || 60 }}分钟</text>
             </view>
-            <text class="service-name">我的宠物</text>
-          </view>
-          <view class="service-item" @click="goToService('member')">
-            <view class="service-icon icon-green">
-              <text>💳</text>
-            </view>
-            <text class="service-name">会员卡</text>
-          </view>
-          <view class="service-item" @click="goToService('record')">
-            <view class="service-icon icon-orange">
-              <text>📋</text>
-            </view>
-            <text class="service-name">预约记录</text>
           </view>
         </view>
       </view>
 
-      <!-- 热门服务 -->
-      <view class="section">
-        <view class="section-header">
-          <text class="section-title">热门服务</text>
-          <text class="section-more" @click="goToServices">全部 ›</text>
-        </view>
-        <scroll-view class="services-scroll" scroll-x>
-          <view class="services-wrapper">
-            <view 
-              v-for="service in services" 
-              :key="service.id" 
-              class="service-card"
-              @click="goToAppointment(service)"
-            >
-              <view class="service-card-image">
-                <text class="service-emoji">{{ getServiceIcon(service.name) }}</text>
-              </view>
-              <view class="service-card-info">
-                <text class="service-card-name">{{ service.name }}</text>
-                <view class="service-card-bottom">
-                  <text class="service-card-price">¥{{ service.price }}</text>
-                  <view class="add-btn">+</view>
-                </view>
-              </view>
-            </view>
-          </view>
-        </scroll-view>
-      </view>
-
-      <!-- 热门商品 -->
+      <!-- 精选商品 -->
       <view class="section">
         <view class="section-header">
           <text class="section-title">精选商品</text>
@@ -109,14 +88,22 @@
             class="product-card"
             @click="goToProductDetail(product.id)"
           >
-            <view class="product-image">
+            <view class="product-image-box">
               <text class="product-emoji">{{ getProductIcon(product.category) }}</text>
+              <view v-if="product.stock <= 0" class="sold-out-mask">
+                <text>已售罄</text>
+              </view>
             </view>
             <view class="product-info">
               <text class="product-name">{{ product.name }}</text>
               <view class="product-bottom">
-                <text class="product-price">¥{{ product.price }}</text>
-                <text class="product-stock" v-if="product.stock < 10">仅剩 {{ product.stock }}</text>
+                <view class="product-price">
+                  <text class="price-symbol">¥</text>
+                  <text class="price-value">{{ product.price }}</text>
+                </view>
+                <text class="product-stock-tag" v-if="product.stock > 0 && product.stock < 10">
+                  库存 {{ product.stock }}
+                </text>
               </view>
             </view>
           </view>
@@ -130,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getServices, type Service } from '@/api/service'
 import { getProducts, type Product } from '@/api/product'
 import { useUserStore } from '@/stores/user'
@@ -146,6 +133,13 @@ const products = ref<Product[]>([])
 
 /** 用户Store */
 const userStore = useUserStore()
+
+/** 用户的第一只宠物（用于展示） */
+const userPet = computed(() => {
+  // 这里需要从 store 或 API 获取用户的宠物
+  // 暂时返回 null，实际需要接入宠物数据
+  return null
+})
 
 /**
  * 初始化
@@ -187,6 +181,19 @@ const loadProducts = async () => {
 }
 
 /**
+ * 获取宠物 emoji
+ */
+const getPetEmoji = (species?: string): string => {
+  const icons: Record<string, string> = {
+    'dog': '🐕',
+    'cat': '🐱',
+    'bird': '🐦',
+    'fish': '🐟'
+  }
+  return icons[species || ''] || '🐾'
+}
+
+/**
  * 获取服务图标
  */
 const getServiceIcon = (name: string): string => {
@@ -202,6 +209,16 @@ const getServiceIcon = (name: string): string => {
     if (name.includes(key)) return icon
   }
   return '🐾'
+}
+
+/**
+ * 获取服务颜色类
+ */
+const getServiceColorClass = (name: string): string => {
+  if (name.includes('洗澡') || name.includes('美容')) return 'color-sky'
+  if (name.includes('寄养')) return 'color-orange'
+  if (name.includes('体检') || name.includes('健康')) return 'color-green'
+  return 'color-purple'
 }
 
 /**
@@ -224,13 +241,23 @@ const getProductIcon = (category?: string): string => {
 const goToService = (type: string) => {
   if (!userStore.checkAuth()) return
   
+  // tabBar 页面
+  const tabBarRoutes: Record<string, string> = {
+    pet: '/pages/pet/index'
+  }
+  
+  // 普通页面
   const routes: Record<string, string> = {
     appointment: '/pages/appointment/create',
-    pet: '/pages/pet/index',
     member: '/pages/member/index',
     record: '/pages/appointment/list'
   }
-  uni.navigateTo({ url: routes[type] || '/pages/index/index' })
+  
+  if (tabBarRoutes[type]) {
+    uni.switchTab({ url: tabBarRoutes[type] })
+  } else if (routes[type]) {
+    uni.navigateTo({ url: routes[type] })
+  }
 }
 
 /**
@@ -271,176 +298,213 @@ const goToMine = () => {
 </script>
 
 <style lang="scss">
+/* 动画定义 */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
 .home-container {
   min-height: 100vh;
-  background-color: $pet-bg-base;
+  background: #FAFAFA;
 }
 
-.status-bar {
-  background: transparent;
-}
-
-/* 导航栏 - 玻璃拟态 */
+/* 玻璃态导航栏 */
 .nav-bar {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 20rpx 30rpx;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
+  
+  &.glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1rpx solid rgba(255, 255, 255, 0.5);
+  }
 }
 
 .nav-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 20rpx 40rpx;
+  height: 88rpx;
 }
 
-.logo-area {
+.location-area {
   display: flex;
   align-items: center;
+  gap: 12rpx;
 }
 
-.logo-icon-small {
-  width: 64rpx;
-  height: 64rpx;
-  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
-  border-radius: 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(255, 214, 0, 0.3);
-  
-  text {
-    font-size: 32rpx;
-  }
-}
-
-.logo-text {
-  font-size: 36rpx;
-  font-weight: 800;
-  color: $pet-text-main;
-  letter-spacing: -0.5rpx;
-}
-
-.user-area {
-  width: 72rpx;
-  height: 72rpx;
-  background: #fff;
-  border: 2rpx solid $pet-bg-hover;
+.location-icon {
+  width: 48rpx;
+  height: 48rpx;
+  background: #FEF3C7;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: $pet-shadow-sm;
-  transition: all 0.3s;
-  
-  &:active {
-    transform: scale(0.95);
-    background: $pet-bg-hover;
-  }
+  font-size: 24rpx;
 }
 
-.user-icon {
+.location-text {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.nav-right {
+  position: relative;
+  padding: 16rpx;
+}
+
+.bell-icon {
   font-size: 36rpx;
+  position: relative;
+}
+
+.bell-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16rpx;
+  height: 16rpx;
+  background: #EF4444;
+  border-radius: 50%;
+  border: 2rpx solid #fff;
 }
 
 /* 主内容区 */
 .main-content {
-  height: calc(100vh - 180rpx);
+  min-height: 100vh;
+  padding: 20rpx 40rpx;
+  box-sizing: border-box;
 }
 
-/* 欢迎横幅 - 更丰富的视觉 */
-.welcome-banner {
-  margin: 30rpx;
-  padding: 40rpx;
-  background: linear-gradient(120deg, $pet-primary, #FFC107);
-  border-radius: $pet-radius-lg;
+/* 宠物状态卡片 - 暗色风格 */
+.pet-status-card {
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+  border-radius: 48rpx;
+  padding: 48rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
+  animation: fade-in 0.5s ease-out;
+}
+
+.pet-card-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 8rpx 32rpx rgba(255, 193, 7, 0.3);
-  color: $pet-text-on-primary;
-  position: relative;
-  overflow: hidden;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    right: -20rpx;
-    top: -20rpx;
-    width: 200rpx;
-    height: 200rpx;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-  }
 }
 
-.banner-content {
+.pet-info-left {
   flex: 1;
-  position: relative;
-  z-index: 1;
 }
 
-.banner-title {
+.pet-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.status-label {
+  font-size: 20rpx;
+  color: #FFBF00;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6rpx 16rpx;
+  border-radius: 12rpx;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2rpx;
+}
+
+.status-value {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+.pet-name {
   display: block;
-  font-size: 38rpx;
+  font-size: 40rpx;
   font-weight: 800;
-  margin-bottom: 12rpx;
-  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
 }
 
-.banner-desc {
+.pet-desc {
   display: block;
   font-size: 26rpx;
-  opacity: 0.9;
-  margin-bottom: 28rpx;
-  font-weight: 500;
+  color: #9CA3AF;
 }
 
-.banner-btn {
-  display: inline-block;
-  background: #fff;
-  padding: 14rpx 36rpx;
-  border-radius: 40rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
-  transition: transform 0.2s;
-  
-  &:active {
-    transform: scale(0.95);
-  }
-  
-  text {
-    font-size: 26rpx;
-    font-weight: 700;
-    color: $pet-text-main;
-  }
-}
-
-.banner-image {
+.pet-avatar {
   width: 120rpx;
   height: 120rpx;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  z-index: 1;
-  border: 2rpx solid rgba(255,255,255,0.3);
+  border: 4rpx solid rgba(255, 255, 255, 0.2);
 }
 
-.banner-emoji {
+.pet-emoji {
   font-size: 60rpx;
+}
+
+/* 欢迎卡片 */
+.welcome-card {
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+  border-radius: 48rpx;
+  padding: 48rpx;
+  margin-bottom: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
+}
+
+.welcome-content {
+  flex: 1;
+}
+
+.welcome-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
+}
+
+.welcome-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #9CA3AF;
+}
+
+.welcome-icon {
+  width: 100rpx;
+  height: 100rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  animation: float 3s ease-in-out infinite;
 }
 
 /* 区块样式 */
 .section {
-  padding: 0 30rpx;
   margin-bottom: 48rpx;
 }
 
@@ -448,203 +512,158 @@ const goToMine = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28rpx;
-}
-
-.section-title {
-  font-size: 34rpx;
-  font-weight: 800;
-  color: $pet-text-main;
-  position: relative;
-  padding-left: 24rpx;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8rpx;
-    height: 36rpx;
-    background: $pet-primary;
-    border-radius: 4rpx;
-    box-shadow: 0 2rpx 8rpx rgba(255, 214, 0, 0.4);
-  }
-}
-
-.section-more {
-  font-size: 26rpx;
-  color: $pet-text-secondary;
-  font-weight: 500;
-  padding: 8rpx 16rpx;
-  background: #fff;
-  border-radius: 20rpx;
-}
-
-/* 服务网格 */
-.service-grid {
-  display: flex;
-  justify-content: space-between;
-  background: #fff;
-  padding: 40rpx 20rpx;
-  border-radius: $pet-radius-lg;
-  box-shadow: $pet-shadow;
-}
-
-.service-item {
-  width: 25%;
-  text-align: center;
-  
-  &:active .service-icon {
-    transform: scale(0.92);
-  }
-}
-
-.service-icon {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20rpx;
-  transition: transform 0.2s;
-  
-  text {
-    font-size: 48rpx;
-  }
-  
-  &.icon-yellow { background: linear-gradient(135deg, #FFF8E1, #FFECB3); color: #FF6F00; }
-  &.icon-blue { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); color: #0D47A1; }
-  &.icon-green { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #1B5E20; }
-  &.icon-orange { background: linear-gradient(135deg, #FBE9E7, #FFCCBC); color: #BF360C; }
-}
-
-.service-name {
-  font-size: 26rpx;
-  color: $pet-text-main;
-  font-weight: 500;
-}
-
-/* 服务滚动 */
-.services-scroll {
-  white-space: nowrap;
-  margin: 0 -30rpx;
-  width: calc(100% + 60rpx);
-}
-
-.services-wrapper {
-  display: inline-flex;
-  gap: 24rpx;
-  padding: 4rpx 30rpx 30rpx;
-}
-
-.service-card {
-  width: 280rpx;
-  background: #fff;
-  border-radius: $pet-radius-lg;
-  padding: 24rpx;
-  display: inline-block;
-  box-shadow: $pet-shadow;
-  vertical-align: top;
-  transition: transform 0.3s, box-shadow 0.3s;
-  
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.service-card-image {
-  width: 100%;
-  height: 180rpx;
-  background: $pet-bg-hover;
-  border-radius: $pet-radius;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-bottom: 24rpx;
 }
 
-.service-emoji {
-  font-size: 72rpx;
+.section-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1F2937;
 }
 
-.service-card-name {
-  display: block;
-  font-size: 30rpx;
-  color: $pet-text-main;
-  font-weight: 700;
-  margin-bottom: 16rpx;
-  white-space: normal;
+.section-more {
+  font-size: 28rpx;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+/* 服务网格 - 2x2 布局 */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx;
+}
+
+.service-card {
+  background: #FFFFFF;
+  border-radius: 40rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  border: 2rpx solid #F3F4F6;
+  transition: all 0.2s;
+  
+  &:active {
+    transform: scale(0.98);
+    border-color: $pet-primary;
+  }
+}
+
+.service-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24rpx;
+}
+
+.service-icon-box {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &.color-sky {
+    background: #E0F2FE;
+    color: #0284C7;
+  }
+  &.color-purple {
+    background: #F3E8FF;
+    color: #9333EA;
+  }
+  &.color-orange {
+    background: #FFF7ED;
+    color: #EA580C;
+  }
+  &.color-green {
+    background: #ECFDF5;
+    color: #059669;
+  }
+}
+
+.service-icon-text {
+  font-size: 40rpx;
+}
+
+.service-price-tag {
+  background: #F9FAFB;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  
+  text {
+    font-size: 24rpx;
+    font-weight: 700;
+    color: #4B5563;
+  }
 }
 
 .service-card-bottom {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
-.service-card-price {
-  font-size: 32rpx;
-  color: $pet-warning;
-  font-weight: 800;
+.service-card-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1F2937;
 }
 
-.add-btn {
-  width: 48rpx;
-  height: 48rpx;
-  background: $pet-primary;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  color: $pet-text-main;
-  box-shadow: 0 4rpx 12rpx rgba(255, 214, 0, 0.3);
+.service-card-duration {
+  font-size: 24rpx;
+  color: #9CA3AF;
 }
 
 /* 商品网格 */
 .products-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 24rpx;
 }
 
 .product-card {
-  width: calc(50% - 12rpx);
-  background: #fff;
-  border-radius: $pet-radius-lg;
+  background: #FFFFFF;
+  border-radius: 40rpx;
   overflow: hidden;
-  box-shadow: $pet-shadow;
-  transition: transform 0.3s;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  border: 2rpx solid #F3F4F6;
+  transition: all 0.3s;
   
   &:active {
     transform: scale(0.98);
+    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
   }
 }
 
-.product-image {
+.product-image-box {
   height: 260rpx;
-  background: $pet-bg-hover;
+  background: #F9FAFB;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60rpx;
-    background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
-  }
+  border-radius: 32rpx 32rpx 0 0;
+  margin: 12rpx 12rpx 0;
 }
 
 .product-emoji {
-  font-size: 90rpx;
-  filter: drop-shadow(0 8rpx 16rpx rgba(0,0,0,0.1));
+  font-size: 80rpx;
+}
+
+.sold-out-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 32rpx;
+  
+  text {
+    font-size: 28rpx;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
 }
 
 .product-info {
@@ -654,8 +673,8 @@ const goToMine = () => {
 .product-name {
   display: block;
   font-size: 28rpx;
-  color: $pet-text-main;
-  font-weight: 600;
+  font-weight: 700;
+  color: #1F2937;
   margin-bottom: 16rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -669,27 +688,31 @@ const goToMine = () => {
 }
 
 .product-price {
-  font-size: 34rpx;
-  color: $pet-warning;
-  font-weight: 800;
-  
-  &::before {
-    content: '¥';
-    font-size: 24rpx;
-    margin-right: 2rpx;
-  }
+  display: flex;
+  align-items: baseline;
+  color: #EF4444;
 }
 
-.product-stock {
+.price-symbol {
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.price-value {
+  font-size: 36rpx;
+  font-weight: 800;
+  font-family: DINAlternate-Bold, sans-serif;
+}
+
+.product-stock-tag {
   font-size: 20rpx;
-  color: $pet-danger;
-  background: rgba(255, 23, 68, 0.08);
-  padding: 4rpx 10rpx;
+  color: #9CA3AF;
+  background: #F3F4F6;
+  padding: 6rpx 12rpx;
   border-radius: 8rpx;
-  font-weight: 500;
 }
 
 .safe-area-bottom {
-  height: 120rpx;
+  height: 180rpx;
 }
 </style>

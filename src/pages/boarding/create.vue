@@ -1,11 +1,11 @@
 <template>
-  <view class="create-appointment-container">
+  <view class="create-boarding-container">
     <!-- 顶部导航 -->
     <view class="sub-header glass">
       <view class="back-btn" @click="goBack">
         <text>‹</text>
       </view>
-      <text class="header-title">预约服务</text>
+      <text class="header-title">寄养服务</text>
       <view class="header-placeholder"></view>
     </view>
 
@@ -28,35 +28,8 @@
 
       <!-- 步骤内容 -->
       <view class="step-content">
-        <!-- Step 1: 选择服务 (仅在未预选时显示) -->
-        <view v-if="currentStep === 1 && !isServicePreselected" class="step-panel">
-          <text class="step-title">选择服务项目</text>
-          <view class="services-list">
-            <view 
-              v-for="service in services" 
-              :key="service.id"
-              :class="['service-card', { selected: selectedServiceId === service.id }]"
-              @click="handleSelectService(service.id)"
-            >
-              <view :class="['service-icon', getServiceColorClass(service.name)]">
-                <text>{{ getServiceIcon(service.name) }}</text>
-              </view>
-              <view class="service-info">
-                <text class="service-name">{{ service.name }}</text>
-                <text class="service-desc">{{ service.description || '专业服务' }}</text>
-              </view>
-              <view class="service-price-wrapper">
-                <text class="service-price">¥{{ service.price }}</text>
-              </view>
-              <view v-if="selectedServiceId === service.id" class="selected-badge">
-                <text>✓</text>
-              </view>
-            </view>
-          </view>
-        </view>
-
-        <!-- Step 2 (或 1 如果预选服务): 选择宠物 -->
-        <view v-if="currentStep === (isServicePreselected ? 1 : 2)" class="step-panel">
+        <!-- Step 1: 选择宠物 -->
+        <view v-if="currentStep === 1" class="step-panel animate-slide-up">
           <text class="step-title">选择哪只爱宠？</text>
           <view class="pets-grid">
             <view 
@@ -79,6 +52,7 @@
               </view>
             </view>
             
+            <!-- 添加新宠物 -->
             <view class="pet-card add-new" @click="goToAddPet">
               <view class="add-icon-wrapper">
                 <text class="add-icon">+</text>
@@ -88,49 +62,45 @@
           </view>
         </view>
 
-        <!-- Step 3 (或 2): 选择时间 -->
-        <view v-if="currentStep === (isServicePreselected ? 2 : 3)" class="step-panel">
-          <text class="step-title">预约时间</text>
-          <view class="time-section">
-            <picker mode="date" :value="selectedDate" :start="minDate" @change="onDateChange">
-              <view class="time-picker">
-                <text class="picker-label">日期</text>
-                <text :class="['picker-value', { placeholder: !selectedDate }]">
-                  {{ selectedDate || '请选择日期' }}
+        <!-- Step 2: 选择日期 -->
+        <view v-if="currentStep === 2" class="step-panel animate-slide-up">
+          <text class="step-title">寄养时间</text>
+          <view class="date-section">
+            <picker mode="date" :value="startDate" :start="minDate" @change="onStartDateChange">
+              <view class="date-picker">
+                <text class="picker-label">开始日期</text>
+                <text :class="['picker-value', { placeholder: !startDate }]">
+                  {{ startDate || '请选择开始日期' }}
                 </text>
                 <text class="picker-arrow">›</text>
               </view>
             </picker>
 
-            <picker mode="time" :value="selectedTime" @change="onTimeChange">
-              <view class="time-picker">
-                <text class="picker-label">时间</text>
-                <text :class="['picker-value', { placeholder: !selectedTime }]">
-                  {{ selectedTime || '请选择时间' }}
+            <picker mode="date" :value="endDate" :start="startDate || minDate" @change="onEndDateChange">
+              <view class="date-picker">
+                <text class="picker-label">结束日期</text>
+                <text :class="['picker-value', { placeholder: !endDate }]">
+                  {{ endDate || '请选择结束日期' }}
                 </text>
                 <text class="picker-arrow">›</text>
               </view>
             </picker>
+
+            <view v-if="days > 0" class="days-badge">
+              <text class="badge-label">寄养天数:</text>
+              <text class="badge-value">{{ days }} 天</text>
+            </view>
           </view>
         </view>
 
-        <!-- Step 4 (或 3): 确认信息 -->
-        <view v-if="currentStep === maxStep" class="step-panel">
+        <!-- Step 3: 确认信息 -->
+        <view v-if="currentStep === 3" class="step-panel animate-slide-up">
           <text class="step-title">确认信息</text>
           
+          <!-- 已选信息卡片 -->
           <view class="summary-card">
             <text class="summary-title">已选信息</text>
             
-            <view class="summary-item">
-              <view class="item-icon-wrapper service">
-                <text class="item-emoji">{{ getServiceIcon(currentService?.name) }}</text>
-              </view>
-              <view class="item-info">
-                <text class="item-label">服务项目</text>
-                <text class="item-value">{{ currentService?.name }}</text>
-              </view>
-            </view>
-
             <view class="summary-item">
               <view class="item-icon-wrapper pet">
                 <text class="item-emoji">{{ getPetEmoji(currentPet?.species) }}</text>
@@ -142,21 +112,40 @@
             </view>
 
             <view class="summary-item">
-              <view class="item-icon-wrapper time">
-                <text class="item-emoji">🕐</text>
+              <view class="item-icon-wrapper date">
+                <text class="item-emoji">📅</text>
               </view>
               <view class="item-info">
-                <text class="item-label">预约时间</text>
-                <text class="item-value">{{ formatTimeDisplay() }}</text>
+                <text class="item-label">寄养时间</text>
+                <text class="item-value">{{ formatDateDisplay(startDate) }} - {{ formatDateDisplay(endDate) }}</text>
               </view>
             </view>
           </view>
 
+          <!-- 费用信息 -->
+          <view class="cost-card">
+            <text class="cost-title">费用明细</text>
+            <view class="cost-row">
+              <text class="cost-label">每日费用</text>
+              <text class="cost-value">¥{{ dailyRate }}</text>
+            </view>
+            <view class="cost-row">
+              <text class="cost-label">寄养天数</text>
+              <text class="cost-value">× {{ days }}</text>
+            </view>
+            <view class="cost-divider"></view>
+            <view class="cost-row total">
+              <text class="cost-label">总费用</text>
+              <text class="cost-value">¥{{ totalCost }}</text>
+            </view>
+          </view>
+
+          <!-- 备注 -->
           <view class="notes-card">
-            <text class="notes-title">备注信息</text>
+            <text class="notes-title">备注要求</text>
             <textarea
               v-model="notes"
-              placeholder="请输入备注信息（选填）"
+              placeholder="例如：宠物胆小，请轻柔对待..."
               class="notes-textarea"
               maxlength="200"
             />
@@ -169,7 +158,7 @@
     <view class="bottom-bar glass">
       <!-- 最后一步显示确认按钮 -->
       <button 
-        v-if="currentStep === maxStep" 
+        v-if="currentStep === 3" 
         class="submit-btn" 
         :loading="loading" 
         @click="handleSubmit"
@@ -193,39 +182,30 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { getPets, type Pet } from '@/api/pet'
-import { getServices, type Service } from '@/api/service'
-import { createAppointment } from '@/api/appointment'
+import { createBoarding } from '@/api/boarding'
+import { useUserStore } from '@/stores/user'
 import { getPetAvatar, getPetEmoji } from '@/utils/pet'
 
 /** 步骤标签 */
-const stepLabels = ref<string[]>([])
+const stepLabels = ['宠物', '日期', '确认']
 
 /** 当前步骤 */
 const currentStep = ref(1)
 
-/** 是否预选了服务 */
-const isServicePreselected = ref(false)
-
-/** 最大步骤数 */
-const maxStep = computed(() => isServicePreselected.value ? 3 : 4)
-
 /** 宠物列表 */
 const pets = ref<Pet[]>([])
-
-/** 服务列表 */
-const services = ref<Service[]>([])
 
 /** 选中的宠物ID */
 const selectedPetId = ref<number | null>(null)
 
-/** 选中的服务ID */
-const selectedServiceId = ref<number | null>(null)
+/** 开始日期 */
+const startDate = ref('')
 
-/** 选中的日期 */
-const selectedDate = ref('')
+/** 结束日期 */
+const endDate = ref('')
 
-/** 选中的时间 */
-const selectedTime = ref('')
+/** 每日费用（固定值） */
+const dailyRate = 120
 
 /** 备注 */
 const notes = ref('')
@@ -233,17 +213,33 @@ const notes = ref('')
 /** 加载状态 */
 const loading = ref(false)
 
-/** 最小日期 */
-const minDate = new Date().toISOString().split('T')[0]
+/** 最小日期（明天） */
+const minDate = (() => {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  return tomorrow.toISOString().split('T')[0]
+})()
+
+/** 用户Store */
+const userStore = useUserStore()
 
 /** 当前选中的宠物 */
 const currentPet = computed(() => {
   return pets.value.find(p => p.id === selectedPetId.value)
 })
 
-/** 当前选中的服务 */
-const currentService = computed(() => {
-  return services.value.find(s => s.id === selectedServiceId.value)
+/** 寄养天数 */
+const days = computed(() => {
+  if (!startDate.value || !endDate.value) return 0
+  const start = new Date(startDate.value)
+  const end = new Date(endDate.value)
+  const diff = end.getTime() - start.getTime()
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+})
+
+/** 总费用 */
+const totalCost = computed(() => {
+  return (days.value * dailyRate).toFixed(2)
 })
 
 /**
@@ -261,30 +257,8 @@ const goBack = () => {
  * 初始化
  */
 onMounted(async () => {
-  initDateTime()
-  await Promise.all([loadPets(), loadServices()])
-  
-  // 从URL参数获取服务ID
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1] as any
-  if (currentPage?.options?.serviceId) {
-    selectedServiceId.value = parseInt(currentPage.options.serviceId)
-    isServicePreselected.value = true
-    stepLabels.value = ['宠物', '时间', '确认']
-  } else {
-    stepLabels.value = ['服务', '宠物', '时间', '确认']
-  }
+  await loadPets()
 })
-
-/**
- * 初始化日期和时间
- */
-const initDateTime = () => {
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  selectedDate.value = tomorrow.toISOString().split('T')[0]
-  selectedTime.value = '09:00'
-}
 
 /**
  * 加载宠物列表
@@ -299,30 +273,13 @@ const loadPets = async () => {
 }
 
 /**
- * 加载服务列表
- */
-const loadServices = async () => {
-  try {
-    const data = await getServices()
-    services.value = data
-  } catch (error) {
-    console.error('加载服务失败:', error)
-  }
-}
-
-/**
  * 判断是否可以进入下一步
  */
 const canGoNext = computed(() => {
   if (currentStep.value === 1) {
-    // 第一步：需要选择服务（如果未预选）或宠物（如果预选了服务）
-    return isServicePreselected.value ? selectedPetId.value !== null : selectedServiceId.value !== null
-  } else if (currentStep.value === (isServicePreselected.value ? 1 : 2)) {
-    // 选择宠物步骤
     return selectedPetId.value !== null
-  } else if (currentStep.value === (isServicePreselected.value ? 2 : 3)) {
-    // 选择时间步骤
-    return selectedDate.value && selectedTime.value
+  } else if (currentStep.value === 2) {
+    return selectedDate.value && endDate.value && days.value > 0
   }
   return false
 })
@@ -337,13 +294,6 @@ const goToNextStep = () => {
 }
 
 /**
- * 选择服务
- */
-const handleSelectService = (id: number) => {
-  selectedServiceId.value = id
-}
-
-/**
  * 选择宠物
  */
 const handleSelectPet = (id: number) => {
@@ -351,55 +301,31 @@ const handleSelectPet = (id: number) => {
 }
 
 /**
- * 日期变更
+ * 开始日期变更
  */
-const onDateChange = (e: any) => {
-  selectedDate.value = e.detail.value
-}
-
-/**
- * 时间变更
- */
-const onTimeChange = (e: any) => {
-  selectedTime.value = e.detail.value
-}
-
-/**
- * 获取服务图标
- */
-const getServiceIcon = (name?: string): string => {
-  const icons: Record<string, string> = {
-    '洗澡': '🛁',
-    '美容': '✂️',
-    '寄养': '🏠',
-    '体检': '🩺',
-    '驱虫': '💊',
-    '疫苗': '💉'
+const onStartDateChange = (e: any) => {
+  startDate.value = e.detail.value
+  if (endDate.value && new Date(endDate.value) <= new Date(startDate.value)) {
+    endDate.value = ''
   }
-  for (const [key, icon] of Object.entries(icons)) {
-    if (name?.includes(key)) return icon
-  }
-  return '✨'
 }
 
 /**
- * 获取服务颜色类
+ * 结束日期变更
  */
-const getServiceColorClass = (name?: string): string => {
-  if (name?.includes('洗澡')) return 'color-blue'
-  if (name?.includes('美容')) return 'color-purple'
-  if (name?.includes('寄养')) return 'color-orange'
-  if (name?.includes('体检')) return 'color-green'
-  return 'color-gray'
+const onEndDateChange = (e: any) => {
+  endDate.value = e.detail.value
 }
 
+
+
 /**
- * 格式化时间显示
+ * 格式化日期显示
  */
-const formatTimeDisplay = (): string => {
-  if (!selectedDate.value || !selectedTime.value) return ''
-  const date = new Date(selectedDate.value)
-  return `${date.getMonth() + 1}月${date.getDate()}日 ${selectedTime.value}`
+const formatDateDisplay = (dateStr: string): string => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return `${date.getMonth() + 1}月${date.getDate()}日`
 }
 
 /**
@@ -410,38 +336,39 @@ const goToAddPet = () => {
 }
 
 /**
- * 提交预约
+ * 提交寄养
  */
 const handleSubmit = async () => {
-  if (!selectedPetId.value || !selectedServiceId.value || !selectedDate.value || !selectedTime.value) {
-    uni.showToast({ title: '请完整填写信息', icon: 'none' })
+  if (!selectedPetId.value) {
+    uni.showToast({ title: '请选择宠物', icon: 'none' })
     return
   }
-
-  const selectedDateTime = new Date(`${selectedDate.value}T${selectedTime.value}`)
-  const now = new Date()
-  if (selectedDateTime < now) {
-    uni.showToast({ title: '预约时间不能早于当前时间', icon: 'none' })
+  if (!startDate.value || !endDate.value) {
+    uni.showToast({ title: '请选择日期', icon: 'none' })
     return
   }
-
-  const appointmentTime = `${selectedDate.value}T${selectedTime.value}:00`
+  if (days.value <= 0) {
+    uni.showToast({ title: '结束日期必须晚于开始日期', icon: 'none' })
+    return
+  }
 
   loading.value = true
   try {
-    await createAppointment({
+    await createBoarding({
       pet_id: selectedPetId.value,
-      service_id: selectedServiceId.value,
-      appointment_time: appointmentTime,
+      start_date: startDate.value,
+      end_date: endDate.value,
+      daily_rate: dailyRate,
       notes: notes.value || undefined
     })
 
     uni.showToast({ title: '预约成功', icon: 'success' })
     setTimeout(() => {
-      uni.navigateTo({ url: '/pages/appointment/list' })
+      uni.navigateTo({ url: '/pages/boarding/list' })
     }, 1000)
   } catch (error) {
-    console.error('预约失败:', error)
+    console.error('创建寄养失败:', error)
+    uni.showToast({ title: '提交失败', icon: 'none' })
   } finally {
     loading.value = false
   }
@@ -449,12 +376,13 @@ const handleSubmit = async () => {
 </script>
 
 <style lang="scss">
-.create-appointment-container {
+.create-boarding-container {
   min-height: 100vh;
   background: #FAFAFA;
   padding-bottom: 160rpx;
 }
 
+/* 顶部导航 */
 .sub-header {
   position: fixed;
   top: 0;
@@ -501,11 +429,13 @@ const handleSubmit = async () => {
   width: 72rpx;
 }
 
+/* 内容区域 */
 .content-area {
   padding: 32rpx;
   padding-top: calc(var(--status-bar-height, 44px) + 120rpx);
 }
 
+/* 步骤指示器 */
 .stepper {
   display: flex;
   justify-content: space-between;
@@ -584,6 +514,7 @@ const handleSubmit = async () => {
   font-weight: 700;
 }
 
+/* 步骤内容 */
 .step-content {
   min-height: 500rpx;
 }
@@ -611,101 +542,7 @@ const handleSubmit = async () => {
   margin-bottom: 40rpx;
 }
 
-.services-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.service-card {
-  background: #FFFFFF;
-  border-radius: 32rpx;
-  padding: 32rpx;
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  border: 3rpx solid transparent;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  position: relative;
-  
-  &.selected {
-    border-color: #FFBF00;
-    background: #FFFBEB;
-    transform: scale(1.02);
-    box-shadow: 0 12rpx 32rpx rgba(251, 191, 36, 0.25);
-  }
-  
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.service-icon {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36rpx;
-  flex-shrink: 0;
-  
-  &.color-blue { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
-  &.color-purple { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); }
-  &.color-orange { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
-  &.color-green { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
-  &.color-gray { background: linear-gradient(135deg, #F3F4F6, #E5E7EB); }
-}
-
-.service-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.service-name {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #1F2937;
-}
-
-.service-desc {
-  font-size: 24rpx;
-  color: #9CA3AF;
-}
-
-.service-price-wrapper {
-  flex-shrink: 0;
-}
-
-.service-price {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1F2937;
-}
-
-.selected-badge {
-  position: absolute;
-  top: 16rpx;
-  right: 16rpx;
-  width: 40rpx;
-  height: 40rpx;
-  background: #FFBF00;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(251, 191, 36, 0.4);
-  
-  text {
-    color: #FFFFFF;
-    font-size: 20rpx;
-    font-weight: 700;
-  }
-}
-
+/* 宠物网格 */
 .pets-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -770,6 +607,26 @@ const handleSubmit = async () => {
   display: inline-block;
 }
 
+.selected-badge {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: #FFBF00;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(251, 191, 36, 0.4);
+  
+  text {
+    color: #FFFFFF;
+    font-size: 20rpx;
+    font-weight: 700;
+  }
+}
+
 .pet-card.add-new {
   background: #FFFFFF;
   border: 3rpx dashed #D1D5DB;
@@ -798,14 +655,15 @@ const handleSubmit = async () => {
   font-weight: 600;
 }
 
-.time-section {
+/* 日期选择 */
+.date-section {
   background: #FFFFFF;
   border-radius: 32rpx;
   padding: 32rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
 }
 
-.time-picker {
+.date-picker {
   display: flex;
   align-items: center;
   background: #F9FAFB;
@@ -818,7 +676,7 @@ const handleSubmit = async () => {
     background: #F3F4F6;
   }
   
-  &:last-child {
+  &:last-of-type {
     margin-bottom: 0;
   }
 }
@@ -826,7 +684,7 @@ const handleSubmit = async () => {
 .picker-label {
   font-size: 28rpx;
   color: #6B7280;
-  min-width: 100rpx;
+  min-width: 140rpx;
   font-weight: 600;
 }
 
@@ -848,6 +706,30 @@ const handleSubmit = async () => {
   font-weight: 300;
 }
 
+.days-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  margin-top: 32rpx;
+  padding: 20rpx;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-radius: 20rpx;
+}
+
+.badge-label {
+  font-size: 26rpx;
+  color: #92400E;
+  font-weight: 600;
+}
+
+.badge-value {
+  font-size: 36rpx;
+  color: #B45309;
+  font-weight: 700;
+}
+
+/* 确认信息 */
 .summary-card {
   background: #FFFFFF;
   border-radius: 32rpx;
@@ -887,16 +769,12 @@ const handleSubmit = async () => {
   justify-content: center;
   flex-shrink: 0;
   
-  &.service {
-    background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
-  }
-  
   &.pet {
     background: linear-gradient(135deg, #FEF3C7, #FDE68A);
   }
   
-  &.time {
-    background: linear-gradient(135deg, #FCE7F3, #FBCFE8);
+  &.date {
+    background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
   }
 }
 
@@ -923,6 +801,74 @@ const handleSubmit = async () => {
   font-weight: 700;
 }
 
+/* 费用卡片 */
+.cost-card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+}
+
+.cost-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: 24rpx;
+}
+
+.cost-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 20rpx;
+  background: #F9FAFB;
+  border-radius: 16rpx;
+  margin-bottom: 12rpx;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  &.total {
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    padding: 24rpx;
+    margin-top: 16rpx;
+    
+    .cost-label {
+      font-size: 30rpx;
+      font-weight: 700;
+      color: #92400E;
+    }
+    
+    .cost-value {
+      font-size: 36rpx;
+      font-weight: 700;
+      color: #B45309;
+    }
+  }
+}
+
+.cost-label {
+  font-size: 28rpx;
+  color: #6B7280;
+  font-weight: 600;
+}
+
+.cost-value {
+  font-size: 30rpx;
+  color: #1F2937;
+  font-weight: 700;
+}
+
+.cost-divider {
+  height: 2rpx;
+  background: #E5E7EB;
+  margin: 16rpx 0;
+}
+
+/* 备注卡片 */
 .notes-card {
   background: #FFFFFF;
   border-radius: 32rpx;
@@ -949,6 +895,7 @@ const handleSubmit = async () => {
   line-height: 1.6;
 }
 
+/* 底部按钮 */
 .bottom-bar {
   position: fixed;
   bottom: 0;

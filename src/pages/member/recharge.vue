@@ -1,69 +1,99 @@
 <template>
   <view class="recharge-container">
-    <!-- 金额选择 -->
-    <view class="amount-section">
-      <text class="section-title">选择充值金额</text>
-      <view class="amount-grid">
-        <view 
-          v-for="amount in presetAmounts" 
-          :key="amount"
-          :class="['amount-item', { active: selectedAmount === amount }]"
-          @click="selectAmount(amount)"
-        >
-          <text class="amount-value">¥{{ amount }}</text>
+    <!-- 顶部背景装饰 -->
+    <view class="header-bg"></view>
+
+    <!-- 内容区域 -->
+    <view class="content-wrapper">
+      <!-- 金额选择卡片 -->
+      <view class="card-section">
+        <text class="section-title">充值金额</text>
+        <view class="amount-grid">
+          <view 
+            v-for="amount in presetAmounts" 
+            :key="amount"
+            :class="['amount-item', { active: selectedAmount === amount }]"
+            @click="selectAmount(amount)"
+          >
+            <text class="currency-symbol">¥</text>
+            <text class="amount-value">{{ amount }}</text>
+            <view class="check-mark" v-if="selectedAmount === amount">✓</view>
+          </view>
+        </view>
+        
+        <!-- 自定义金额 -->
+        <view :class="['custom-amount-box', { active: selectedAmount === 0 }]">
+          <text class="custom-label">自定义金额</text>
+          <view class="input-row">
+            <text class="currency">¥</text>
+            <input
+              type="digit"
+              v-model="customAmount"
+              placeholder="请输入 10-50000 之间的金额"
+              placeholder-class="input-placeholder"
+              class="custom-input"
+              @focus="selectedAmount = 0"
+            />
+          </view>
         </view>
       </view>
-      
-      <!-- 自定义金额 -->
-      <view class="custom-amount">
-        <text class="custom-label">自定义金额</text>
-        <view class="custom-input-wrapper">
-          <text class="currency">¥</text>
-          <input
-            type="digit"
-            v-model="customAmount"
-            placeholder="输入金额"
-            class="custom-input"
-            @focus="selectedAmount = 0"
-          />
+
+      <!-- 支付方式卡片 -->
+      <view class="card-section">
+        <text class="section-title">支付方式</text>
+        <view class="payment-item active">
+          <view class="payment-left">
+            <image class="alipay-icon" src="/static/icon/alipay.png" mode="aspectFit" v-if="false"></image>
+            <!-- 暂用 emoji 代替图片 -->
+            <text class="payment-icon-text">🔷</text>
+            <text class="payment-name">支付宝支付</text>
+          </view>
+          <view class="radio-check">
+            <view class="radio-inner"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 充值说明 -->
+      <view class="tips-section">
+        <text class="tips-title">温馨提示</text>
+        <view class="tips-list">
+          <text class="tips-item">1. 充值余额永久有效，无使用期限。</text>
+          <text class="tips-item">2. 余额可用于店内洗护、商品购买等消费。</text>
+          <text class="tips-item">3. 充值成功后无法退款，请确认金额后支付。</text>
         </view>
       </view>
     </view>
 
-    <!-- 支付方式 -->
-    <view class="payment-section">
-      <text class="section-title">支付方式</text>
-      <view class="payment-item active">
-        <text class="payment-icon">💳</text>
-        <text class="payment-name">支付宝</text>
-        <text class="payment-check">✓</text>
+    <!-- 底部悬浮栏 -->
+    <view class="bottom-bar">
+      <view class="price-info">
+        <text class="price-label">实付金额</text>
+        <view class="price-value-row">
+          <text class="price-symbol">¥</text>
+          <text class="price-num">{{ finalAmount || '0.00' }}</text>
+        </view>
       </view>
-    </view>
-
-    <!-- 充值说明 -->
-    <view class="tips-section">
-      <text class="tips-title">充值说明</text>
-      <text class="tips-text">• 充值金额实时到账，余额永久有效</text>
-      <text class="tips-text">• 充值成功后可在店内消费使用</text>
-      <text class="tips-text">• 如有问题请联系店员</text>
-    </view>
-
-    <!-- 确认支付 -->
-    <view class="submit-wrapper">
-      <view class="total-info">
-        <text class="total-label">支付金额</text>
-        <text class="total-value">¥{{ finalAmount }}</text>
-      </view>
-      <button class="submit-btn" :loading="loading" @click="handlePay">
-        确认充值
+      <button 
+        class="submit-btn" 
+        :class="{ disabled: finalAmount <= 0 }"
+        :loading="loading" 
+        @click="handlePay"
+      >
+        立即充值
       </button>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { createCardRechargePayment } from '@/api/member'
+/**
+ * @description 会员卡充值页面
+ * 支持预设金额和自定义金额，通过支付宝完成充值
+ */
+
+import { ref, computed, onMounted } from 'vue'
+import { createCardRechargePayment, queryRechargePaymentStatus } from '@/api/member'
 
 /** 预设金额 */
 const presetAmounts = [50, 100, 200, 500, 1000, 2000]
@@ -77,17 +107,30 @@ const customAmount = ref('')
 /** 加载状态 */
 const loading = ref(false)
 
-/** 获取页面参数 */
+/** 会员卡ID */
 const cardId = ref(0)
 
-// 获取页面参数
-const pages = getCurrentPages()
-const currentPage = pages[pages.length - 1] as any
-if (currentPage?.options?.cardId) {
-  cardId.value = parseInt(currentPage.options.cardId)
-}
+/** 当前订单号（用于轮询） */
+const currentOutTradeNo = ref('')
 
-/** 最终金额 */
+/** 轮询定时器 */
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
+/**
+ * 初始化
+ */
+onMounted(() => {
+  // 获取页面参数
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1] as any
+  if (currentPage?.options?.cardId) {
+    cardId.value = parseInt(currentPage.options.cardId)
+  }
+})
+
+/**
+ * 最终金额
+ */
 const finalAmount = computed(() => {
   if (selectedAmount.value > 0) {
     return selectedAmount.value
@@ -126,236 +169,422 @@ const handlePay = async () => {
   try {
     uni.showLoading({ title: '创建订单...' })
     
+    // 创建充值支付
     const res = await createCardRechargePayment(cardId.value, finalAmount.value)
-    
     uni.hideLoading()
 
-    if (res.pay_url) {
+    // 优先使用二维码支付
+    if (res.qr_code) {
+      currentOutTradeNo.value = res.out_trade_no
+      
+      // 跳转到支付中间页（二维码模式）
+      const qrCode = encodeURIComponent(res.qr_code)
+      const returnUrl = encodeURIComponent(`/pages/member/index`)
+      
+      uni.navigateTo({
+        url: `/pages/payment/pay?qrCode=${qrCode}&outTradeNo=${res.out_trade_no}&amount=${finalAmount.value}&returnUrl=${returnUrl}`,
+        fail: () => {
+          uni.showToast({ title: '跳转失败，请重试', icon: 'none' })
+        }
+      })
+    } else if (res.pay_url) {
+      // 备选：使用页面支付
+      currentOutTradeNo.value = res.out_trade_no
+      
+      const payUrl = encodeURIComponent(res.pay_url)
+      const returnUrl = encodeURIComponent(`/pages/member/index`)
+      
+      uni.navigateTo({
+        url: `/pages/payment/pay?payUrl=${payUrl}&outTradeNo=${res.out_trade_no}&amount=${finalAmount.value}&returnUrl=${returnUrl}`,
+        fail: () => {
+          handlePayFallback(res.pay_url)
+        }
+      })
+    } else {
+      uni.showToast({ title: res.message || '创建支付失败', icon: 'none' })
+    }
+  } catch (error) {
+    uni.hideLoading()
+    console.error('创建支付失败:', error)
+    uni.showToast({ title: '创建支付失败', icon: 'none' })
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * 备用支付方案（直接打开链接）
+ */
+const handlePayFallback = (payUrl: string) => {
+  // #ifdef H5
+  window.open(payUrl, '_blank')
+  startPolling()
+  uni.showModal({
+    title: '支付提示',
+    content: '请在新窗口完成支付，支付完成后点击"已完成"',
+    confirmText: '已完成',
+    cancelText: '取消',
+    success: async (result) => {
+      stopPolling()
+      if (result.confirm) {
+        await checkPaymentResult()
+      }
+    }
+  })
+  // #endif
+  
+  // #ifdef MP
+  uni.showModal({
+    title: '支付提示',
+    content: '请复制链接到浏览器中完成支付',
+    showCancel: false
+  })
+  // #endif
+}
+
+/**
+ * 开始轮询支付状态
+ */
+const startPolling = () => {
+  if (pollTimer) return
+  
+  pollTimer = setInterval(async () => {
+    try {
+      const res = await queryRechargePaymentStatus(cardId.value, currentOutTradeNo.value)
+      if (res.status === 'paid') {
+        stopPolling()
+        uni.showToast({ title: '充值成功', icon: 'success' })
+        setTimeout(() => {
+          uni.navigateBack()
+        }, 1500)
+      }
+    } catch (error) {
+      console.error('轮询状态失败:', error)
+    }
+  }, 3000)
+}
+
+/**
+ * 停止轮询
+ */
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+/**
+ * 检查支付结果
+ */
+const checkPaymentResult = async () => {
+  uni.showLoading({ title: '查询支付结果...' })
+  try {
+    const res = await queryRechargePaymentStatus(cardId.value, currentOutTradeNo.value)
+    uni.hideLoading()
+    
+    if (res.status === 'paid') {
+      uni.showToast({ title: '充值成功', icon: 'success' })
+      setTimeout(() => {
+        uni.navigateBack()
+      }, 1500)
+    } else {
       uni.showModal({
-        title: '支付提示',
-        content: '即将跳转至支付宝支付',
+        title: '支付未完成',
+        content: '未检测到支付成功，请确认是否已完成支付',
+        confirmText: '重新检查',
+        cancelText: '返回',
         success: (result) => {
           if (result.confirm) {
-            // H5环境跳转支付
-            // #ifdef H5
-            window.open(res.pay_url, '_blank')
-            // #endif
-            
-            // 提示用户支付完成后返回
-            setTimeout(() => {
-              uni.showModal({
-                title: '支付确认',
-                content: '请确认是否已完成支付？',
-                confirmText: '已完成',
-                cancelText: '未支付',
-                success: (r) => {
-                  if (r.confirm) {
-                    uni.showToast({ title: '充值成功', icon: 'success' })
-                    setTimeout(() => {
-                      uni.navigateBack()
-                    }, 1000)
-                  }
-                }
-              })
-            }, 2000)
+            checkPaymentResult()
           }
         }
       })
     }
   } catch (error) {
     uni.hideLoading()
-    console.error('创建支付失败:', error)
-  } finally {
-    loading.value = false
+    uni.showToast({ title: '查询失败', icon: 'none' })
   }
 }
 </script>
 
 <style lang="scss">
-.recharge-container {
-  min-height: 100vh;
-  background: #FFFDE7;
-  padding: 30rpx;
-  padding-bottom: 200rpx;
+page {
+  background-color: #F7F8FA;
 }
 
-/* 金额选择 */
-.amount-section {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 30rpx;
-  margin-bottom: 24rpx;
+.recharge-container {
+  min-height: 100vh;
+  padding-bottom: 200rpx;
+  position: relative;
+  background-color: $pet-bg-base;
+}
+
+.header-bg {
+  height: 200rpx;
+  background: linear-gradient(180deg, #FFF8E1 0%, #F7F8FA 100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 0;
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  padding: 20rpx 30rpx;
+}
+
+.card-section {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 40rpx 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
 }
 
 .section-title {
   display: block;
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 700;
-  color: #212121;
-  margin-bottom: 24rpx;
+  color: #333;
+  margin-bottom: 30rpx;
 }
 
 .amount-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20rpx;
-  margin-bottom: 30rpx;
+  gap: 24rpx;
+  margin-bottom: 40rpx;
 }
 
 .amount-item {
-  width: calc(33.33% - 14rpx);
-  height: 120rpx;
-  background: #F5F5F5;
-  border: 2rpx solid #E0E0E0;
-  border-radius: 16rpx;
+  width: calc(33.33% - 16rpx);
+  height: 140rpx;
+  background: #FFFFFF;
+  border: 2rpx solid #EEEEEE;
+  border-radius: 20rpx;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
   
+  .currency-symbol {
+    font-size: 24rpx;
+    color: #666;
+    margin-bottom: 4rpx;
+  }
+  
+  .amount-value {
+    font-size: 40rpx;
+    font-weight: 600;
+    color: #333;
+  }
+
   &.active {
-    background: linear-gradient(135deg, #FFF9C4, #FFE57F);
-    border-color: #FFD600;
+    background: #FFFBF0;
+    border-color: #FFC107;
+    
+    .currency-symbol, .amount-value {
+      color: #FF8F00;
+    }
+  }
+  
+  .check-mark {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    background: #FFC107;
+    color: #fff;
+    font-size: 20rpx;
+    padding: 2rpx 12rpx;
+    border-top-left-radius: 16rpx;
+    border-bottom-right-radius: 18rpx;
   }
 }
 
-.amount-value {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #212121;
-}
-
-.custom-amount {
-  border-top: 1rpx solid #F5F5F5;
-  padding-top: 24rpx;
+.custom-amount-box {
+  background: #F9FAFB;
+  border: 2rpx solid transparent;
+  border-radius: 20rpx;
+  padding: 24rpx 30rpx;
+  transition: all 0.3s;
+  
+  &.active {
+    background: #FFFBF0;
+    border-color: #FFC107;
+  }
 }
 
 .custom-label {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 12rpx;
   display: block;
-  font-size: 28rpx;
-  color: #757575;
-  margin-bottom: 16rpx;
 }
 
-.custom-input-wrapper {
+.input-row {
   display: flex;
-  align-items: center;
-  background: #F5F5F5;
-  border: 2rpx solid #E0E0E0;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
-}
-
-.currency {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #212121;
-  margin-right: 12rpx;
-}
-
-.custom-input {
-  flex: 1;
-  height: 88rpx;
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #212121;
-}
-
-/* 支付方式 */
-.payment-section {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 30rpx;
-  margin-bottom: 24rpx;
+  align-items: flex-end;
+  
+  .currency {
+    font-size: 40rpx;
+    font-weight: 600;
+    color: #333;
+    margin-right: 16rpx;
+    margin-bottom: 6rpx;
+  }
+  
+  .custom-input {
+    flex: 1;
+    height: 60rpx;
+    font-size: 48rpx;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .input-placeholder {
+    font-size: 28rpx;
+    color: #CCC;
+    font-weight: normal;
+  }
 }
 
 .payment-item {
   display: flex;
   align-items: center;
-  padding: 24rpx 0;
+  justify-content: space-between;
+  padding: 10rpx 0;
   
-  &.active {
-    .payment-check {
-      color: #00C853;
-    }
+  .payment-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .payment-icon-text {
+    font-size: 48rpx;
+    margin-right: 20rpx;
+  }
+  
+  .payment-name {
+    font-size: 30rpx;
+    color: #333;
+    font-weight: 500;
   }
 }
 
-.payment-icon {
-  font-size: 44rpx;
-  margin-right: 20rpx;
+.radio-check {
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #FFC107;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .radio-inner {
+    width: 20rpx;
+    height: 20rpx;
+    background: #FFC107;
+    border-radius: 50%;
+  }
 }
 
-.payment-name {
-  flex: 1;
-  font-size: 30rpx;
-  color: #212121;
-}
-
-.payment-check {
-  font-size: 36rpx;
-  color: #BDBDBD;
-}
-
-/* 充值说明 */
 .tips-section {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 30rpx;
+  padding: 20rpx 10rpx;
 }
 
 .tips-title {
-  display: block;
   font-size: 28rpx;
-  font-weight: 600;
-  color: #212121;
-  margin-bottom: 16rpx;
-}
-
-.tips-text {
+  color: #999;
+  margin-bottom: 20rpx;
   display: block;
-  font-size: 24rpx;
-  color: #757575;
-  line-height: 2;
 }
 
-/* 确认支付 */
-.submit-wrapper {
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.tips-item {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.6;
+}
+
+.bottom-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #fff;
-  padding: 24rpx 30rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  background: #FFFFFF;
+  padding: 20rpx 40rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
+  z-index: 100;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
-.total-info {
-  margin-right: 30rpx;
-}
-
-.total-label {
-  display: block;
-  font-size: 24rpx;
-  color: #757575;
-}
-
-.total-value {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #FF6D00;
+.price-info {
+  .price-label {
+    font-size: 24rpx;
+    color: #666;
+    margin-right: 10rpx;
+  }
+  
+  .price-value-row {
+    display: flex;
+    align-items: baseline;
+    
+    .price-symbol {
+      font-size: 32rpx;
+      color: #FF5722;
+      font-weight: 600;
+      margin-right: 4rpx;
+    }
+    
+    .price-num {
+      font-size: 48rpx;
+      color: #FF5722;
+      font-weight: 700;
+      font-family: DINAlternate-Bold, sans-serif;
+    }
+  }
 }
 
 .submit-btn {
-  flex: 1;
-  height: 96rpx;
-  background: linear-gradient(135deg, #FFD600, #FFAB00);
-  border: none;
-  border-radius: 24rpx;
+  width: 60%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #FFD54F, #FFB300);
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 32rpx;
-  font-weight: 700;
-  color: #212121;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 8rpx 20rpx rgba(255, 179, 0, 0.3);
+  transition: all 0.3s;
+  
+  &::after {
+    border: none;
+  }
+  
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 4rpx 10rpx rgba(255, 179, 0, 0.2);
+  }
+  
+  &.disabled {
+    background: #E0E0E0;
+    color: #999;
+    box-shadow: none;
+  }
 }
 </style>

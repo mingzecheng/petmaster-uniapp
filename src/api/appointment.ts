@@ -21,6 +21,7 @@ export interface Appointment {
         id: number
         name: string
         species: string
+        image_url?: string
     }
     service?: {
         id: number

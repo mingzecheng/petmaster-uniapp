@@ -1,96 +1,134 @@
 <template>
   <view class="mine-container">
-    <!-- 顶部背景 -->
-    <view class="header-bg"></view>
-    
-    <!-- 用户信息卡片 -->
-    <view class="user-card">
-      <view class="card-content">
-        <view class="user-header">
-          <view class="user-avatar" @click="goToLogin">
-            <text class="avatar-emoji">{{ isLoggedIn ? '😊' : '👤' }}</text>
-          </view>
-          <view class="user-info">
-            <text class="user-name">{{ isLoggedIn ? userInfo?.username : '点击登录/注册' }}</text>
-            <view v-if="isLoggedIn" class="user-level-badge">
-              <text class="level-icon">👑</text>
-              <text class="level-text">{{ userInfo?.member_level?.name || '普通会员' }}</text>
+    <!-- 用户信息区域 - 暗色风格 -->
+    <view class="user-header" :style="{ paddingTop: (statusBarHeight + 40) + 'px' }">
+      <!-- 用户头像和信息 -->
+      <view class="user-info-row" @click="isLoggedIn ? goToProfile() : goToLogin()">
+        <view class="avatar-wrapper">
+          <view class="avatar-ring">
+            <view class="avatar-inner">
+              <text class="avatar-emoji">{{ getAvatarEmoji() }}</text>
             </view>
-            <text v-else class="user-desc">登录享受更多会员权益</text>
+          </view>
+          <view v-if="isLoggedIn" class="level-badge">
+            LV.{{ userInfo?.member_level?.level || 1 }}
           </view>
         </view>
-        
-        <view v-if="isLoggedIn" class="card-footer">
-          <view class="data-item">
-            <text class="data-value">{{ userInfo?.points || 0 }}</text>
-            <text class="data-label">当前积分</text>
+        <view class="user-info-content">
+          <text class="username">{{ isLoggedIn ? userInfo?.username : '点击登录' }}</text>
+          <view class="user-level-tag" v-if="isLoggedIn">
+            <text class="level-icon">👑</text>
+            <text class="level-name">{{ userInfo?.member_level?.name || '普通会员' }}</text>
+            <text class="level-discount" v-if="userInfo?.member_level?.discount_rate">
+              {{ (userInfo.member_level.discount_rate * 10).toFixed(1) }}折特权
+            </text>
           </view>
-          <view class="data-divider"></view>
-          <view class="data-item" @click="goTo('/pages/member/index')">
-            <text class="data-value">查看</text>
-            <text class="data-label">会员权益</text>
+          <text class="user-subtitle" v-else>登录享受更多权益</text>
+        </view>
+        <text class="arrow-icon">›</text>
+      </view>
+
+      <!-- 数据统计 -->
+      <view v-if="isLoggedIn" class="stats-row">
+        <view class="stat-item" @click="goTo('/pages/member/index')">
+          <view class="stat-value">
+            <text class="stat-currency">¥</text>
+            <text class="stat-num">{{ userInfo?.member_card?.balance || '0.00' }}</text>
+          </view>
+          <text class="stat-label">卡内余额</text>
+        </view>
+        <view class="stat-item" @click="goTo('/pages/records/index')">
+          <text class="stat-num">{{ userInfo?.points || 0 }}</text>
+          <text class="stat-label">当前积分 ›</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-num">3</text>
+          <text class="stat-label">优惠券</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 我的宠物模块 -->
+    <view class="section pets-section" v-if="isLoggedIn">
+      <view class="section-card">
+        <view class="section-header">
+          <view class="section-title-row">
+            <text class="section-icon">🦴</text>
+            <text class="section-title">我的宠物</text>
+          </view>
+          <view class="add-btn" @click="goTo('/pages/pet/add')">
+            <text>+</text>
+          </view>
+        </view>
+        <view class="pets-list">
+          <view class="pet-item" v-for="i in 2" :key="i" @click="goTo('/pages/pet/index')">
+            <view class="pet-avatar">
+              <image 
+                :src="i === 1 ? '/static/dog.png' : '/static/cat.png'" 
+                class="pet-image"
+                mode="aspectFill"
+              />
+            </view>
+            <view class="pet-info">
+              <text class="pet-name">{{ i === 1 ? '旺财' : '咪咪' }}</text>
+              <text class="pet-desc">{{ i === 1 ? '柴犬 · 公 · 12.5kg' : '英短 · 母 · 4.2kg' }}</text>
+            </view>
+            <text class="pet-arrow">›</text>
           </view>
         </view>
       </view>
     </view>
 
     <!-- 功能菜单 -->
-    <view class="menu-section">
-      <view class="menu-group">
+    <view class="section menu-section">
+      <view class="section-card">
         <view class="menu-item" @click="goTo('/pages/appointment/list')">
-          <view class="menu-left">
-            <view class="menu-icon-box icon-blue">
-              <text>📅</text>
-            </view>
-            <text class="menu-text">我的预约</text>
+          <view class="menu-icon color-blue">
+            <text>📅</text>
           </view>
+          <text class="menu-name">预约记录</text>
           <text class="menu-arrow">›</text>
         </view>
-        <view class="menu-item" @click="goTo('/pages/member/index')">
-          <view class="menu-left">
-            <view class="menu-icon-box icon-yellow">
-              <text>💳</text>
-            </view>
-            <text class="menu-text">会员中心</text>
+        <view class="menu-item" @click="goTo('/pages/boarding/list')">
+          <view class="menu-icon color-orange">
+            <text>🏨</text>
           </view>
+          <text class="menu-name">寄养订单</text>
           <text class="menu-arrow">›</text>
         </view>
-        <view class="menu-item" @click="goTo('/pages/pet/index')">
-          <view class="menu-left">
-            <view class="menu-icon-box icon-green">
-              <text>🐕</text>
-            </view>
-            <text class="menu-text">宠物档案</text>
+        <view class="menu-item no-border" @click="goTo('/pages/records/index')">
+          <view class="menu-icon color-green">
+            <text>📊</text>
           </view>
+          <text class="menu-name">消费记录</text>
           <text class="menu-arrow">›</text>
         </view>
       </view>
+    </view>
 
-      <view class="menu-group">
+    <!-- 设置菜单 -->
+    <view class="section menu-section">
+      <view class="section-card">
         <view class="menu-item" @click="handleChangePassword">
-          <view class="menu-left">
-            <view class="menu-icon-box icon-purple">
-              <text>🔐</text>
-            </view>
-            <text class="menu-text">修改密码</text>
+          <view class="menu-icon color-purple">
+            <text>🔐</text>
           </view>
+          <text class="menu-name">修改密码</text>
           <text class="menu-arrow">›</text>
         </view>
-        <view class="menu-item" @click="handleAbout">
-          <view class="menu-left">
-            <view class="menu-icon-box icon-grey">
-              <text>ℹ️</text>
-            </view>
-            <text class="menu-text">关于我们</text>
+        <view class="menu-item no-border" @click="handleAbout">
+          <view class="menu-icon color-gray">
+            <text>ℹ️</text>
           </view>
+          <text class="menu-name">关于我们</text>
           <text class="menu-arrow">›</text>
         </view>
       </view>
-      
-      <!-- 退出登录 -->
-      <view v-if="isLoggedIn" class="logout-wrapper">
-        <button class="logout-btn" @click="handleLogout">退出登录</button>
-      </view>
+    </view>
+
+    <!-- 退出登录 -->
+    <view v-if="isLoggedIn" class="section logout-section">
+      <button class="logout-btn" @click="handleLogout">退出登录</button>
     </view>
   </view>
 </template>
@@ -134,11 +172,44 @@ const goToLogin = () => {
 }
 
 /**
+ * 跳转编辑资料
+ */
+const goToProfile = () => {
+  if (!userStore.checkAuth()) return
+  uni.navigateTo({ url: '/pages/profile/index' })
+}
+
+/**
+ * 获取头像 emoji
+ */
+const getAvatarEmoji = (): string => {
+  if (!isLoggedIn.value) return '👤'
+  
+  const avatarMap: Record<string, string> = {
+    'avatar_smile': '😊',
+    'avatar_cool': '😎',
+    'avatar_dog': '🐶',
+    'avatar_cat': '🐱',
+    'avatar_fox': '🦊'
+  }
+  
+  return avatarMap[userInfo.value?.avatar || ''] || '😊'
+}
+
+/**
  * 跳转页面
  */
 const goTo = (url: string) => {
   if (!userStore.checkAuth()) return
-  uni.navigateTo({ url })
+  
+  // TabBar 页面列表
+  const tabBarPages = ['/pages/index/index', '/pages/product/list', '/pages/pet/index', '/pages/mine/index']
+  
+  if (tabBarPages.includes(url)) {
+    uni.switchTab({ url })
+  } else {
+    uni.navigateTo({ url })
+  }
 }
 
 /**
@@ -146,7 +217,7 @@ const goTo = (url: string) => {
  */
 const handleChangePassword = () => {
   if (!userStore.checkAuth()) return
-  uni.showToast({ title: '功能开发中', icon: 'none' })
+  uni.navigateTo({ url: '/pages/password/index' })
 }
 
 /**
@@ -179,254 +250,359 @@ const handleLogout = () => {
 <style lang="scss">
 .mine-container {
   min-height: 100vh;
-  background-color: $pet-bg-base;
-  padding-bottom: 40rpx;
+  background: #FAFAFA;
+  padding-bottom: 120rpx;
 }
 
-/* 顶部背景 - 增加装饰 */
-.header-bg {
-  height: 360rpx;
-  background: linear-gradient(135deg, $pet-primary, #FFC107);
-  border-radius: 0 0 48rpx 48rpx;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 0;
-  overflow: hidden;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    right: -60rpx;
-    top: -60rpx;
-    width: 300rpx;
-    height: 300rpx;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-  }
-  
-  &::before {
-    content: '';
-    position: absolute;
-    left: -40rpx;
-    bottom: 40rpx;
-    width: 200rpx;
-    height: 200rpx;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-  }
-}
-
-/* 用户卡片 */
-.user-card {
-  position: relative;
-  z-index: 1;
-  padding: 160rpx 30rpx 0;
-  margin-bottom: 40rpx;
-}
-
-.card-content {
-  background: #fff;
-  border-radius: $pet-radius-lg;
-  padding: 40rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
-}
-
+/* 用户头部 - 暗色风格 */
 .user-header {
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+  border-radius: 0 0 64rpx 64rpx;
+  padding: 40rpx 40rpx 60rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
+}
+
+.user-info-row {
   display: flex;
   align-items: center;
-  margin-bottom: 40rpx;
+  gap: 32rpx;
+  margin-bottom: 48rpx;
 }
 
-.user-avatar {
-  width: 128rpx;
-  height: 128rpx;
-  background: $pet-bg-hover;
+.avatar-wrapper {
+  position: relative;
+}
+
+.avatar-ring {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFBF00 0%, transparent 50%);
+  padding: 6rpx;
+}
+
+.avatar-inner {
+  width: 100%;
+  height: 100%;
+  background: #1F2937;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 32rpx;
-  border: 4rpx solid #fff;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
-  
-  &:active {
-    transform: scale(0.95);
-  }
+  border: 6rpx solid #1F2937;
 }
 
 .avatar-emoji {
   font-size: 64rpx;
 }
 
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  display: block;
-  font-size: 38rpx;
+.level-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #FFBF00;
+  color: #1F2937;
+  font-size: 20rpx;
   font-weight: 800;
-  color: $pet-text-main;
-  margin-bottom: 12rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 16rpx;
+  border: 4rpx solid #1F2937;
 }
 
-.user-desc {
-  font-size: 26rpx;
-  color: $pet-text-secondary;
-}
-
-.user-level-badge {
-  display: inline-flex;
-  align-items: center;
-  background: linear-gradient(90deg, #333, #1a1a1a);
-  padding: 8rpx 24rpx;
-  border-radius: 30rpx;
-  gap: 8rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
-}
-
-.level-icon {
-  font-size: 24rpx;
-}
-
-.level-text {
-  font-size: 22rpx;
-  color: #FFD700;
-  font-weight: 700;
-  letter-spacing: 1rpx;
-}
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding-top: 32rpx;
-  border-top: 2rpx solid $pet-border-light;
-}
-
-.data-item {
-  text-align: center;
+.user-info-content {
   flex: 1;
-  padding: 10rpx 0;
-  border-radius: $pet-radius;
-  transition: background 0.2s;
-  
-  &:active {
-    background: $pet-bg-hover;
-  }
 }
 
-.data-divider {
-  width: 2rpx;
-  height: 40rpx;
-  background: $pet-border;
-}
-
-.data-value {
+.username {
   display: block;
   font-size: 40rpx;
   font-weight: 800;
-  color: $pet-text-main;
-  margin-bottom: 4rpx;
+  color: #FFFFFF;
+  margin-bottom: 12rpx;
 }
 
-.data-label {
+.user-level-tag {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  width: fit-content;
+}
+
+.level-icon {
+  font-size: 20rpx;
+}
+
+.level-name {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #FCD34D;
+}
+
+.level-discount {
+  font-size: 20rpx;
+  color: #9CA3AF;
+  margin-left: 8rpx;
+}
+
+.user-subtitle {
+  font-size: 26rpx;
+  color: #9CA3AF;
+}
+
+.arrow-icon {
+  font-size: 40rpx;
+  color: #6B7280;
+}
+
+/* 数据统计 */
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20rpx;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  
+  &:first-child {
+    text-align: left;
+  }
+  
+  &:last-child {
+    text-align: right;
+  }
+}
+
+.stat-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  margin-bottom: 8rpx;
+}
+
+.stat-currency {
   font-size: 24rpx;
-  color: $pet-text-secondary;
+  font-weight: 700;
+  color: #FFBF00;
 }
 
-/* 菜单区域 */
-.menu-section {
-  padding: 0 30rpx;
+.stat-num {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  font-family: DINAlternate-Bold, sans-serif;
+  margin-bottom: 8rpx;
 }
 
-.menu-group {
-  background: #fff;
-  border-radius: $pet-radius-lg;
-  margin-bottom: 30rpx;
-  overflow: hidden;
-  box-shadow: $pet-shadow;
+.stat-label {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  font-weight: 500;
 }
 
-.menu-item {
+/* 区块样式 */
+.section {
+  padding: 0 40rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-card {
+  background: #FFFFFF;
+  border-radius: 48rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  border: 2rpx solid #F3F4F6;
+}
+
+.section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 36rpx 30rpx;
-  border-bottom: 2rpx solid $pet-border-light;
-  transition: background 0.2s;
+  margin-bottom: 24rpx;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.section-icon {
+  font-size: 36rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1F2937;
+}
+
+.add-btn {
+  width: 56rpx;
+  height: 56rpx;
+  background: #FEF3C7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
-  &:last-child {
-    border-bottom: none;
+  text {
+    font-size: 32rpx;
+    font-weight: 700;
+    color: #D97706;
   }
   
   &:active {
-    background: $pet-bg-hover;
+    background: #FFBF00;
+    
+    text {
+      color: #FFFFFF;
+    }
   }
 }
 
-.menu-left {
+/* 宠物列表 */
+.pets-list {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 16rpx;
 }
 
-.menu-icon-box {
-  width: 72rpx;
-  height: 72rpx;
+.pet-item {
+  display: flex;
+  align-items: center;
+  background: #F9FAFB;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  gap: 20rpx;
+  transition: all 0.2s;
+  
+  &:active {
+    background: #F3F4F6;
+    transform: scale(0.98);
+  }
+}
+
+.pet-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  background: #FFFFFF;
   border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
   
   text {
-    font-size: 36rpx;
+    font-size: 40rpx;
   }
-  
-  &.icon-blue { background: rgba(41, 121, 255, 0.1); color: $pet-secondary; }
-  &.icon-yellow { background: rgba(255, 214, 0, 0.15); color: #FF6F00; }
-  &.icon-green { background: rgba(0, 200, 83, 0.1); color: $pet-success; }
-  &.icon-purple { background: rgba(156, 39, 176, 0.1); color: #9C27B0; }
-  &.icon-grey { background: rgba(158, 158, 158, 0.1); color: #757575; }
 }
 
-.menu-text {
+.pet-image {
+  width: 100%;
+  height: 100%;
+}
+
+.pet-info {
+  flex: 1;
+}
+
+.pet-name {
+  display: block;
   font-size: 30rpx;
-  color: $pet-text-main;
-  font-weight: 500;
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: 6rpx;
+}
+
+.pet-desc {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+.pet-arrow {
+  font-size: 32rpx;
+  color: #D1D5DB;
+}
+
+/* 菜单项 */
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 0;
+  border-bottom: 2rpx solid #F3F4F6;
+  gap: 20rpx;
+  
+  &.no-border {
+    border-bottom: none;
+  }
+  
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.menu-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  text {
+    font-size: 32rpx;
+  }
+  
+  &.color-blue { background: #DBEAFE; }
+  &.color-orange { background: #FFEDD5; }
+  &.color-green { background: #D1FAE5; }
+  &.color-purple { background: #EDE9FE; }
+  &.color-gray { background: #F3F4F6; }
+}
+
+.menu-name {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #374151;
 }
 
 .menu-arrow {
   font-size: 32rpx;
-  color: $pet-text-placeholder;
+  color: #D1D5DB;
 }
 
-/* 退出按钮 */
-.logout-wrapper {
-  margin-top: 60rpx;
-  padding-bottom: 40rpx;
+/* 退出登录 */
+.logout-section {
+  margin-top: 40rpx;
 }
 
 .logout-btn {
-  background: #fff;
-  color: $pet-danger;
-  font-size: 32rpx;
-  font-weight: 600;
-  border-radius: 48rpx;
-  box-shadow: $pet-shadow;
+  background: #FFFFFF;
   height: 96rpx;
-  line-height: 96rpx;
+  border-radius: 48rpx;
+  color: #EF4444;
+  font-size: 30rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  border: 2rpx solid #FEE2E2;
   
   &:active {
-    background: #FFF5F5;
-    transform: scale(0.98);
+    background: #FEF2F2;
   }
   
-  &::after {
-    border: none;
-  }
+  &::after { border: none; }
 }
 </style>

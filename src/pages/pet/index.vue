@@ -1,5 +1,21 @@
 <template>
   <view class="pet-container">
+    <!-- 页头 -->
+    <view class="page-header">
+      <view class="header-bg-deco">
+        <text class="deco-paw paw-1">🐾</text>
+        <text class="deco-paw paw-2">🐾</text>
+      </view>
+      <view class="header-content">
+        <text class="header-title">我的宠物</text>
+        <text class="header-subtitle">管理您的爱宠档案</text>
+      </view>
+      <view class="header-tracker">
+        <text class="tracker-num">{{ pets.length }}</text>
+        <text class="tracker-label">只爱宠</text>
+      </view>
+    </view>
+
     <!-- 宠物列表 -->
     <scroll-view class="pet-scroll" scroll-y @scrolltolower="loadMore">
       <view v-if="pets.length > 0" class="pets-list">
@@ -9,41 +25,41 @@
           class="pet-card"
           @click="goToDetail(pet.id)"
         >
-          <view class="pet-card-left">
-            <view class="pet-avatar">
-              <text class="pet-emoji">{{ getPetEmoji(pet.species) }}</text>
-            </view>
+          <view class="pet-avatar-box">
+            <image 
+              :src="getPetAvatar(pet.image_url, pet.species)" 
+              class="pet-image"
+              mode="aspectFill"
+            />
           </view>
-          <view class="pet-card-right">
+          <view class="pet-info">
             <view class="pet-header">
               <text class="pet-name">{{ pet.name }}</text>
-              <view class="pet-gender-badge" :class="pet.gender">
+              <view class="pet-gender" :class="pet.gender">
                 <text>{{ pet.gender === 'male' ? '♂' : '♀' }}</text>
               </view>
             </view>
             <text class="pet-breed">{{ pet.species }} · {{ pet.breed || '未知品种' }}</text>
-            <view class="pet-tags">
-              <text v-if="pet.age" class="pet-tag">{{ pet.age }}岁</text>
-              <text v-if="pet.weight" class="pet-tag">{{ pet.weight }}kg</text>
+            <view class="pet-meta">
+              <text v-if="pet.birthday" class="meta-item">🎂 {{ formatBirthday(pet.birthday) }}</text>
+              <text v-if="pet.weight" class="meta-item">⚖️ {{ pet.weight }}kg</text>
             </view>
           </view>
-          <view class="pet-arrow">
-            <text>›</text>
-          </view>
+          <text class="pet-arrow">›</text>
         </view>
       </view>
 
       <!-- 空状态 -->
       <view v-else-if="!loading" class="empty-state">
-        <view class="empty-image">
+        <view class="empty-icon">
           <text>🐾</text>
         </view>
-        <text class="empty-text">还没有添加宠物</text>
-        <text class="empty-hint">点击下方按钮添加您的爱宠</text>
+        <text class="empty-title">还没有添加宠物</text>
+        <text class="empty-desc">点击下方按钮添加您的爱宠</text>
       </view>
 
       <!-- 加载状态 -->
-      <view v-if="loading" class="loading-tip">
+      <view v-if="loading" class="loading-box">
         <text>加载中...</text>
       </view>
       
@@ -61,8 +77,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getPets, type Pet } from '@/api/pet'
+import { getPets, deletePet, type Pet } from '@/api/pet'
 import { useUserStore } from '@/stores/user'
+import { getPetAvatar, getPetEmoji } from '@/utils/pet'
 
 /** 宠物列表 */
 const pets = ref<Pet[]>([])
@@ -129,89 +146,181 @@ const goToDetail = (id: number) => {
 }
 
 /**
- * 获取宠物emoji
+ * 格式化生日
  */
-const getPetEmoji = (species: string): string => {
-  const emojis: Record<string, string> = {
-    '狗': '🐕',
-    '猫': '🐱',
-    '兔子': '🐰',
-    '仓鼠': '🐹',
-    '鸟': '🐦',
-    '鱼': '🐟'
-  }
-  return emojis[species] || '🐾'
+const formatBirthday = (dateStr: string): string => {
+  const date = new Date(dateStr)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 </script>
 
 <style lang="scss">
 .pet-container {
   min-height: 100vh;
-  background-color: $pet-bg-base;
+  background: #FAFAFA;
+}
+
+/* 页头 */
+.page-header {
+  position: relative;
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+  padding: 40rpx;
+  padding-top: calc(var(--status-bar-height, 20px) + 40rpx);
+  padding-bottom: 80rpx;
+  border-radius: 0 0 48rpx 48rpx;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 12rpx 32rpx rgba(17, 24, 39, 0.15);
+}
+
+.header-bg-deco {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.deco-paw {
+  position: absolute;
+  font-size: 160rpx;
+  opacity: 0.03;
+  color: #FFFFFF;
+  transform: rotate(15deg);
+}
+
+.paw-1 {
+  top: -20rpx;
+  right: -20rpx;
+  font-size: 200rpx;
+}
+
+.paw-2 {
+  bottom: 0;
+  left: 40rpx;
+  opacity: 0.02;
+  transform: rotate(-10deg);
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
+}
+
+.header-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
+  letter-spacing: 1rpx;
+}
+
+.header-subtitle {
+  font-size: 26rpx;
+  color: #9CA3AF;
+  font-weight: 300;
+}
+
+.header-tracker {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  padding: 12rpx 24rpx;
+  border-radius: 100rpx;
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.tracker-num {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FFBF00;
+  line-height: 1;
+  font-family: DINAlternate-Bold, sans-serif;
+}
+
+.tracker-label {
+  font-size: 24rpx;
+  color: #D1D5DB;
 }
 
 .pet-scroll {
-  height: 100vh;
+  height: calc(100vh - 200rpx);
 }
 
 .pets-list {
-  padding: 30rpx;
+  padding: 32rpx;
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 20rpx;
 }
 
+/* 宠物卡片 */
 .pet-card {
   display: flex;
   align-items: center;
-  background: #fff;
-  border-radius: $pet-radius-lg;
-  padding: 30rpx;
-  box-shadow: $pet-shadow;
-  transition: transform 0.2s;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  border: 2rpx solid #F3F4F6;
+  gap: 20rpx;
+  transition: all 0.2s;
   
   &:active {
     transform: scale(0.98);
+    border-color: #FFBF00;
   }
 }
 
-.pet-card-left {
-  margin-right: 24rpx;
-}
-
-.pet-avatar {
-  width: 120rpx;
-  height: 120rpx;
-  background: $pet-bg-hover;
-  border-radius: $pet-radius-lg;
+.pet-avatar-box {
+  width: 100rpx;
+  height: 100rpx;
+  background: #F3F4F6;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2rpx solid $pet-border-light;
+  overflow: hidden;
+}
+
+.pet-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .pet-emoji {
-  font-size: 64rpx;
+  font-size: 48rpx;
 }
 
-.pet-card-right {
+.pet-info {
   flex: 1;
 }
 
 .pet-header {
   display: flex;
   align-items: center;
+  gap: 12rpx;
   margin-bottom: 8rpx;
 }
 
 .pet-name {
   font-size: 32rpx;
   font-weight: 700;
-  color: $pet-text-main;
-  margin-right: 16rpx;
+  color: #1F2937;
 }
 
-.pet-gender-badge {
+.pet-gender {
   width: 36rpx;
   height: 36rpx;
   border-radius: 50%;
@@ -220,44 +329,42 @@ const getPetEmoji = (species: string): string => {
   justify-content: center;
   
   text {
-    font-size: 24rpx;
-    color: #fff;
-    line-height: 1;
+    font-size: 20rpx;
+    color: #FFFFFF;
   }
   
   &.male {
-    background: #2979FF;
+    background: #3B82F6;
   }
   
   &.female {
-    background: #FF4081;
+    background: #EC4899;
   }
 }
 
 .pet-breed {
   display: block;
-  font-size: 26rpx;
-  color: $pet-text-secondary;
-  margin-bottom: 16rpx;
+  font-size: 24rpx;
+  color: #9CA3AF;
+  margin-bottom: 12rpx;
 }
 
-.pet-tags {
+.pet-meta {
   display: flex;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
-.pet-tag {
+.meta-item {
   font-size: 22rpx;
-  color: $pet-text-secondary;
-  background: $pet-bg-base;
-  padding: 4rpx 16rpx;
+  color: #6B7280;
+  background: #F9FAFB;
+  padding: 6rpx 12rpx;
   border-radius: 8rpx;
 }
 
 .pet-arrow {
-  font-size: 40rpx;
-  color: $pet-text-placeholder;
-  margin-left: 16rpx;
+  font-size: 36rpx;
+  color: #D1D5DB;
 }
 
 /* 空状态 */
@@ -265,63 +372,63 @@ const getPetEmoji = (species: string): string => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding-top: 200rpx;
+  padding-top: 160rpx;
 }
 
-.empty-image {
-  width: 200rpx;
-  height: 200rpx;
-  background: #fff;
+.empty-icon {
+  width: 160rpx;
+  height: 160rpx;
+  background: #FFFFFF;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 30rpx;
-  box-shadow: $pet-shadow;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
   
   text {
-    font-size: 80rpx;
+    font-size: 64rpx;
     opacity: 0.5;
   }
 }
 
-.empty-text {
+.empty-title {
   font-size: 32rpx;
-  font-weight: 600;
-  color: $pet-text-main;
+  font-weight: 700;
+  color: #1F2937;
   margin-bottom: 12rpx;
 }
 
-.empty-hint {
+.empty-desc {
   font-size: 26rpx;
-  color: $pet-text-secondary;
+  color: #9CA3AF;
 }
 
 /* 加载状态 */
-.loading-tip {
+.loading-box {
   text-align: center;
-  padding: 30rpx;
+  padding: 40rpx;
   
   text {
     font-size: 26rpx;
-    color: $pet-text-secondary;
+    color: #9CA3AF;
   }
 }
 
-/* 悬浮添加按钮 */
+/* 悬浮按钮 */
 .fab-btn {
   position: fixed;
-  bottom: 60rpx;
+  bottom: 180rpx;
   left: 50%;
   transform: translateX(-50%);
-  background: $pet-primary;
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
   padding: 24rpx 48rpx;
-  border-radius: 60rpx;
+  border-radius: 48rpx;
   display: flex;
   align-items: center;
-  box-shadow: $pet-shadow-float;
-  z-index: 100;
+  gap: 12rpx;
+  box-shadow: 0 12rpx 32rpx rgba(251, 191, 36, 0.45);
+  z-index: 999;
   
   &:active {
     transform: translateX(-50%) scale(0.95);
@@ -331,18 +438,17 @@ const getPetEmoji = (species: string): string => {
 .fab-icon {
   font-size: 40rpx;
   font-weight: 300;
-  margin-right: 12rpx;
-  color: $pet-text-on-primary;
+  color: #1F2937;
   line-height: 1;
 }
 
 .fab-text {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: $pet-text-on-primary;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1F2937;
 }
 
 .safe-area-bottom {
-  height: 160rpx;
+  height: 280rpx;
 }
 </style>

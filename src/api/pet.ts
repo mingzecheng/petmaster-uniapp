@@ -10,12 +10,12 @@ export interface Pet {
     name: string
     species: string
     breed?: string
-    age?: number
     gender?: string
+    birthday?: string
     weight?: number
-    owner_id: number
+    health_status?: string
     image_url?: string
-    description?: string
+    owner_id: number
     created_at: string
     updated_at?: string
 }
@@ -25,11 +25,11 @@ export interface PetCreate {
     name: string
     species: string
     breed?: string
-    age?: number
     gender?: string
+    birthday?: string
     weight?: number
+    health_status?: string
     owner_id: number
-    description?: string
 }
 
 /** 更新宠物参数 */
@@ -37,10 +37,10 @@ export interface PetUpdate {
     name?: string
     species?: string
     breed?: string
-    age?: number
     gender?: string
+    birthday?: string
     weight?: number
-    description?: string
+    health_status?: string
     image_url?: string
 }
 

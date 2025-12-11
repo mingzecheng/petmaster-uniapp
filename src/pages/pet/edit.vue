@@ -1,11 +1,11 @@
 <template>
-  <view class="add-pet-container">
+  <view class="edit-pet-container">
     <!-- 顶部导航 -->
     <view class="sub-header glass">
       <view class="back-btn" @click="goBack">
         <text>‹</text>
       </view>
-      <text class="header-title">添加宠物</text>
+      <text class="header-title">编辑宠物</text>
       <view class="header-placeholder"></view>
     </view>
 
@@ -31,7 +31,7 @@
 
         <view class="form-item">
           <text class="form-label">宠物类型 *</text>
-          <picker :range="speciesList" @change="onSpeciesChange">
+          <picker :range="speciesList" :value="speciesIndex" @change="onSpeciesChange">
             <view class="picker-group">
               <text :class="{ placeholder: !formData.species }">{{ formData.species || '请选择' }}</text>
               <text class="picker-arrow">›</text>
@@ -79,15 +79,13 @@
 
         <view class="form-row">
           <view class="form-item half">
-            <text class="form-label">年龄</text>
-            <view class="input-group">
-              <input
-                type="number"
-                v-model="formData.age"
-                placeholder="岁"
-                class="input-field"
-              />
-            </view>
+            <text class="form-label">生日</text>
+            <picker mode="date" :value="formData.birthday" @change="onBirthdayChange">
+              <view class="picker-group">
+                <text :class="{ placeholder: !formData.birthday }">{{ formData.birthday || '请选择' }}</text>
+                <text class="picker-arrow">›</text>
+              </view>
+            </picker>
           </view>
           <view class="form-item half">
             <text class="form-label">体重</text>
@@ -103,11 +101,11 @@
         </view>
 
         <view class="form-item">
-          <text class="form-label">描述</text>
+          <text class="form-label">健康状态</text>
           <view class="textarea-group">
             <textarea
-              v-model="formData.description"
-              placeholder="添加一些关于宠物的描述（选填）"
+              v-model="formData.health_status"
+              placeholder="请描述宠物的健康状况（选填）"
               class="textarea-field"
             />
           </view>
@@ -118,43 +116,92 @@
     <!-- 底部保存按钮 -->
     <view class="bottom-bar glass">
       <button class="submit-btn" :loading="loading" @click="handleSubmit">
-        保存档案
+        保存修改
       </button>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { createPet, type PetCreate } from '@/api/pet'
-import { useUserStore } from '@/stores/user'
+/**
+ * @description 宠物编辑页面
+ */
+
+import { ref, reactive, onMounted, computed } from 'vue'
+import { getPetDetail, updatePet, type Pet, type PetUpdate } from '@/api/pet'
+
+/** 宠物ID */
+const petId = ref<number>(0)
+
+/** 原始宠物数据 */
+const originalPet = ref<Pet | null>(null)
 
 /** 表单数据 */
-const formData = reactive<PetCreate>({
+const formData = reactive<PetUpdate>({
   name: '',
   species: '',
   breed: '',
   gender: '',
-  age: undefined,
+  birthday: '',
   weight: undefined,
-  description: '',
-  owner_id: 0
+  health_status: ''
 })
 
 /** 宠物类型列表 */
 const speciesList = ['狗', '猫', '兔子', '仓鼠', '鸟', '鱼', '其他']
 
+/** 当前选中的类型索引 */
+const speciesIndex = computed(() => {
+  const idx = speciesList.indexOf(formData.species || '')
+  return idx >= 0 ? idx : 0
+})
+
 /** 加载状态 */
 const loading = ref(false)
-
-/** 用户Store */
-const userStore = useUserStore()
 
 /**
  * 返回
  */
 const goBack = () => {
   uni.navigateBack()
+}
+
+/**
+ * 初始化
+ */
+onMounted(() => {
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1] as any
+  if (currentPage?.options?.id) {
+    petId.value = parseInt(currentPage.options.id)
+    loadPet(petId.value)
+  }
+})
+
+/**
+ * 加载宠物详情
+ */
+const loadPet = async (id: number) => {
+  try {
+    uni.showLoading({ title: '加载中...' })
+    const data = await getPetDetail(id)
+    originalPet.value = data
+    
+    // 填充表单
+    formData.name = data.name
+    formData.species = data.species
+    formData.breed = data.breed || ''
+    formData.gender = data.gender || ''
+    formData.birthday = data.birthday || ''
+    formData.weight = data.weight
+    formData.health_status = data.health_status || ''
+    
+    uni.hideLoading()
+  } catch (error) {
+    uni.hideLoading()
+    console.error('加载宠物失败:', error)
+    uni.showToast({ title: '宠物不存在', icon: 'none' })
+  }
 }
 
 /**
@@ -165,10 +212,17 @@ const onSpeciesChange = (e: any) => {
 }
 
 /**
+ * 选择生日
+ */
+const onBirthdayChange = (e: any) => {
+  formData.birthday = e.detail.value
+}
+
+/**
  * 表单验证
  */
 const validateForm = (): boolean => {
-  if (!formData.name.trim()) {
+  if (!formData.name?.trim()) {
     uni.showToast({ title: '请输入宠物名称', icon: 'none' })
     return false
   }
@@ -185,21 +239,16 @@ const validateForm = (): boolean => {
 const handleSubmit = async () => {
   if (!validateForm()) return
 
-  if (!userStore.userInfo?.id) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    return
-  }
-
   loading.value = true
   try {
-    formData.owner_id = userStore.userInfo.id
-    await createPet({
+    await updatePet(petId.value, {
       ...formData,
-      age: formData.age ? Number(formData.age) : undefined,
-      weight: formData.weight ? Number(formData.weight) : undefined
+      weight: formData.weight ? Number(formData.weight) : undefined,
+      birthday: formData.birthday || undefined,
+      health_status: formData.health_status || undefined
     })
 
-    uni.showToast({ title: '添加成功', icon: 'success' })
+    uni.showToast({ title: '保存成功', icon: 'success' })
     
     // 通知列表刷新
     uni.$emit('refreshPets')
@@ -208,7 +257,7 @@ const handleSubmit = async () => {
       uni.navigateBack()
     }, 1000)
   } catch (error) {
-    console.error('添加宠物失败:', error)
+    console.error('更新宠物失败:', error)
   } finally {
     loading.value = false
   }
@@ -216,7 +265,7 @@ const handleSubmit = async () => {
 </script>
 
 <style lang="scss">
-.add-pet-container {
+.edit-pet-container {
   min-height: 100vh;
   background: #FAFAFA;
   padding-bottom: 160rpx;

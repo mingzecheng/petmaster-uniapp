@@ -22,6 +22,7 @@ export interface User {
 
 /** 用户更新参数 */
 export interface UserUpdate {
+    username?: string
     mobile?: string
     email?: string
     avatar?: string

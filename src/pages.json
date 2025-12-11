@@ -17,7 +17,8 @@
 		{
 			"path": "pages/product/list",
 			"style": {
-				"navigationBarTitleText": "商品列表"
+				"navigationBarTitleText": "商品列表",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -29,7 +30,8 @@
 		{
 			"path": "pages/pet/index",
 			"style": {
-				"navigationBarTitleText": "我的宠物"
+				"navigationBarTitleText": "我的宠物",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -42,6 +44,12 @@
 			"path": "pages/pet/add",
 			"style": {
 				"navigationBarTitleText": "添加宠物"
+			}
+		},
+		{
+			"path": "pages/pet/edit",
+			"style": {
+				"navigationBarTitleText": "编辑宠物"
 			}
 		},
 		{
@@ -74,18 +82,63 @@
 			"style": {
 				"navigationBarTitleText": "会员充值"
 			}
+		},
+		{
+			"path": "pages/payment/pay",
+			"style": {
+				"navigationBarTitleText": "支付中"
+			}
+		},
+		{
+			"path": "pages/records/index",
+			"style": {
+				"navigationBarTitleText": "消费记录"
+			}
+		},
+		{
+			"path": "pages/password/index",
+			"style": {
+				"navigationBarTitleText": "修改密码"
+			}
+		},
+		{
+			"path": "pages/profile/index",
+			"style": {
+				"navigationBarTitleText": "编辑资料"
+			}
+		},
+		{
+			"path": "pages/boarding/list",
+			"style": {
+				"navigationBarTitleText": "寄养记录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/boarding/create",
+			"style": {
+				"navigationBarTitleText": "新建寄养",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/boarding/detail",
+			"style": {
+				"navigationBarTitleText": "寄养详情",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "PetMaster",
-		"navigationBarBackgroundColor": "#FFD600",
-		"backgroundColor": "#FFFDE7",
+		"navigationBarBackgroundColor": "#FFBF00",
+		"backgroundColor": "#FFF8DC",
 		"backgroundTextStyle": "dark"
 	},
 	"tabBar": {
 		"color": "#909399",
-		"selectedColor": "#FFD600",
+		"selectedColor": "#F9A825",
 		"borderStyle": "white",
 		"backgroundColor": "#FFFFFF",
 		"fontSize": "14px",

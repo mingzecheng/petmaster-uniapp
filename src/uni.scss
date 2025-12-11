@@ -1,64 +1,55 @@
 /**
  * PetMaster 用户端小程序全局样式变量
- * 简约、专业、整齐的活力黄主题风格
+ * 风格：现代活泼、明亮黄色背景、圆形卡片、品牌金点缀
  */
 
 /* ========== 核心色板 (Color Palette) ========== */
 
-/* 主色：活力黄 (Vibrant Yellow) - 保持品牌识别度 */
-$pet-primary: #FFD600;
-$pet-primary-light: #FFE57F;
-$pet-primary-dark: #FFAB00;
-$pet-primary-fade: rgba(255, 214, 0, 0.1);
+/* 主色：品牌金 (Brand Gold) - Amber */
+$pet-primary: #FFBF00;
+$pet-primary-light: #FFD54F;
+$pet-primary-dark: #FF8F00;
+$pet-primary-fade: rgba(255, 191, 0, 0.2);
 
-/* 辅色：专业蓝 (Professional Blue) - 用于链接、选中态 */
+/* 辅色：交互蓝 (Interactive Blue) */
 $pet-secondary: #2979FF;
-$pet-secondary-dark: #1565C0;
+$pet-secondary-light: #E3F2FD;
 $pet-secondary-fade: rgba(41, 121, 255, 0.08);
 
 /* 功能色 */
 $pet-success: #00C853;
 $pet-warning: #FF9100;
 $pet-danger: #FF3D00;
-$pet-info: #00B0FF;
+$pet-info: #90A4AE;
 
-/* 背景体系 */
-$pet-bg-base: #F5F7FA;
-/* 页面背景：浅灰蓝，更现代 */
+/* 背景体系 - 更鲜艳的黄色调 */
+$pet-bg-base: #FFF8DC;
 $pet-bg-card: #FFFFFF;
-/* 卡片背景：纯白 */
-$pet-bg-hover: #F9FAFB;
-/* 悬停/点击背景 */
+$pet-bg-hover: #FFECB3;
+$pet-bg-input: #FFFDE7;
 
 /* 文本体系 */
 $pet-text-main: #1A1A1A;
-/* 主要文字：近黑 */
-$pet-text-secondary: #606266;
-/* 次要文字：深灰 */
-$pet-text-placeholder: #909399;
-/* 占位文字：浅灰 */
-$pet-text-disabled: #C0C4CC;
-/* 禁用文字：更浅灰 */
+$pet-text-regular: #333333;
+$pet-text-secondary: #666666;
+$pet-text-placeholder: #999999;
+$pet-text-disabled: #CCCCCC;
 $pet-text-on-primary: #1A1A1A;
-/* 主色上的文字：深黑 */
-$pet-text-on-secondary: #FFFFFF;
-/* 辅色上的文字：纯白 */
-$pet-border: #E4E7ED;
-/* 边框颜色 */
-$pet-border-light: #EBEEF5;
-/* 浅边框颜色 */
 
-$pet-shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-$pet-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
-$pet-shadow-lg: 0 8rpx 30rpx rgba(0, 0, 0, 0.08);
-$pet-shadow-float: 0 12rpx 40rpx rgba(255, 214, 0, 0.2);
-/* 悬浮操作按钮阴影 */
+/* 边框体系 */
+$pet-border: #E0E0E0;
+$pet-border-light: #F0F0F0;
 
-/* 倒角 (Radius) */
-$pet-radius-sm: 8rpx;
-$pet-radius: 16rpx;
-$pet-radius-lg: 24rpx;
-$pet-radius-xl: 32rpx;
+/* 阴影体系 - 增强品牌色阴影 */
+$pet-shadow-sm: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+$pet-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+$pet-shadow-lg: 0 16rpx 48rpx rgba(0, 0, 0, 0.1);
+$pet-shadow-float: 0 12rpx 32rpx rgba(249, 168, 37, 0.35);
+
+/* 倒角体系 */
+$pet-radius-sm: 12rpx;
+$pet-radius: 20rpx;
+$pet-radius-lg: 32rpx;
 $pet-radius-full: 9999rpx;
 
 /* ========== uni-app 默认变量覆盖 ========== */
@@ -71,7 +62,7 @@ $uni-color-error: $pet-danger;
 
 /* 文字基本颜色 */
 $uni-text-color: $pet-text-main;
-$uni-text-color-inverse: #fff;
+$uni-text-color-inverse: #ffffff;
 $uni-text-color-grey: $pet-text-secondary;
 $uni-text-color-placeholder: $pet-text-placeholder;
 $uni-text-color-disable: $pet-text-disabled;

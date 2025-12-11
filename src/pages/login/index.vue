@@ -1,25 +1,28 @@
 <template>
   <view class="login-container">
-    <!-- 登录卡片 -->
-    <view class="login-card">
-      <!-- Logo区域 -->
+    <!-- 背景装饰 -->
+    <view class="bg-decoration top-right"></view>
+    <view class="bg-decoration bottom-left"></view>
+    
+    <view class="login-content">
+      <!-- Logo 区域 -->
       <view class="logo-section">
-        <view class="logo-icon">
-          <text class="logo-emoji">🐕</text>
+        <view class="logo-box">
+          <text class="logo-emoji">🦴</text>
         </view>
-        <text class="title">PetMaster</text>
-        <text class="subtitle">专业宠物护理平台</text>
+        <text class="app-title">PetMaster</text>
+        <text class="app-subtitle">爱宠智能管家</text>
       </view>
 
-      <!-- 表单区域 -->
-      <view class="form-section">
+      <!-- 登录表单卡片 -->
+      <view class="form-card">
         <!-- 用户名输入 -->
         <view class="input-group">
-          <text class="input-label">用户名</text>
+          <view class="input-icon">👤</view>
           <input
             type="text"
             v-model="formData.username"
-            placeholder="请输入用户名"
+            placeholder="账号 / 手机号"
             placeholder-class="input-placeholder"
             class="input-field"
           />
@@ -27,48 +30,48 @@
 
         <!-- 密码输入 -->
         <view class="input-group">
-          <text class="input-label">密码</text>
-          <view class="password-wrapper">
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              v-model="formData.password"
-              placeholder="请输入密码"
-              placeholder-class="input-placeholder"
-              class="input-field"
-            />
-            <view class="eye-icon" @click="togglePassword">
-              <text>{{ showPassword ? '显示' : '隐藏' }}</text>
-            </view>
+          <view class="input-icon">🔒</view>
+          <input
+            :type="showPassword ? 'text' : 'password'"
+            v-model="formData.password"
+            placeholder="密码"
+            placeholder-class="input-placeholder"
+            class="input-field"
+          />
+          <view class="eye-btn" @click="togglePassword">
+            <text class="eye-icon">{{ showPassword ? '👀' : '🙈' }}</text>
           </view>
         </view>
 
         <!-- 注册模式额外字段 -->
         <template v-if="isRegister">
           <view class="input-group">
-            <text class="input-label">手机号</text>
+            <view class="input-icon">📱</view>
             <input
-              type="text"
+              type="number"
               v-model="formData.mobile"
-              placeholder="请输入手机号（选填）"
+              placeholder="手机号（选填）"
               placeholder-class="input-placeholder"
               class="input-field"
+              maxlength="11"
             />
           </view>
         </template>
 
-        <!-- 登录/注册按钮 -->
-        <button class="submit-btn" :loading="loading" @click="handleSubmit">
-          {{ isRegister ? '注册账号' : '立即登录' }}
+        <!-- 提交按钮 -->
+        <button 
+          class="submit-btn" 
+          :class="{ disabled: !formData.username || !formData.password }"
+          :loading="loading" 
+          @click="handleSubmit"
+        >
+          {{ isRegister ? '注册并登录' : '立即登录' }}
         </button>
 
         <!-- 切换模式 -->
-        <view class="switch-mode">
-          <text class="switch-text">
-            {{ isRegister ? '已有账号？' : '还没有账号？' }}
-          </text>
-          <text class="switch-link" @click="toggleMode">
-            {{ isRegister ? '去登录' : '去注册' }}
-          </text>
+        <view class="switch-mode" @click="toggleMode">
+          <text class="switch-text">{{ isRegister ? '已有账号？' : '还没有账号？' }}</text>
+          <text class="switch-link">{{ isRegister ? '去登录' : '去注册' }}</text>
         </view>
       </view>
     </view>
@@ -269,179 +272,182 @@ const handleSubmit = async () => {
 <style lang="scss">
 .login-container {
   min-height: 100vh;
-  background-color: $pet-bg-base;
+  background: #FFFFFF;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40rpx;
-}
-
-/* 登录卡片 */
-.login-card {
-  width: 100%;
-  max-width: 640rpx;
-  background: #fff;
-  border-radius: 40rpx;
   padding: 60rpx 40rpx;
-  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.06);
-  border: 1rpx solid rgba(0, 0, 0, 0.02);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Logo区域 */
+/* 背景装饰 */
+.bg-decoration {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  
+  &.top-right {
+    top: -10%;
+    right: -10%;
+    width: 500rpx;
+    height: 500rpx;
+    background: radial-gradient(circle, rgba(254, 243, 199, 0.8) 0%, transparent 70%);
+  }
+  
+  &.bottom-left {
+    bottom: -10%;
+    left: -10%;
+    width: 500rpx;
+    height: 500rpx;
+    background: radial-gradient(circle, rgba(254, 215, 170, 0.6) 0%, transparent 70%);
+  }
+}
+
+.login-content {
+  width: 100%;
+  max-width: 680rpx;
+  position: relative;
+  z-index: 1;
+}
+
+/* Logo 区域 */
 .logo-section {
   text-align: center;
-  margin-bottom: 60rpx;
+  margin-bottom: 80rpx;
 }
 
-.logo-icon {
-  width: 140rpx;
-  height: 140rpx;
-  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
-  border-radius: 40rpx;
+.logo-box {
+  width: 160rpx;
+  height: 160rpx;
+  background: linear-gradient(135deg, #FFD54F 0%, #FF8F00 100%);
+  border-radius: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 32rpx;
-  box-shadow: 0 12rpx 32rpx rgba(255, 214, 0, 0.3);
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 40rpx;
-    border: 2rpx solid rgba(255, 255, 255, 0.3);
-  }
+  box-shadow: 0 16rpx 40rpx rgba(245, 158, 11, 0.35);
+  transform: rotate(3deg);
 }
 
 .logo-emoji {
-  font-size: 72rpx;
+  font-size: 80rpx;
+  filter: drop-shadow(0 4rpx 8rpx rgba(0, 0, 0, 0.1));
 }
 
-.title {
+.app-title {
   display: block;
-  font-size: 44rpx;
-  font-weight: 800;
-  color: $pet-text-main;
+  font-size: 64rpx;
+  font-weight: 900;
+  color: #1F2937;
+  letter-spacing: -2rpx;
   margin-bottom: 12rpx;
-  letter-spacing: -1rpx;
 }
 
-.subtitle {
+.app-subtitle {
   display: block;
   font-size: 28rpx;
-  color: $pet-text-secondary;
+  color: #9CA3AF;
   font-weight: 500;
 }
 
-/* 表单区域 */
-.form-section {
-  margin-bottom: 20rpx;
+/* 表单卡片 */
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
 }
 
 .input-group {
-  margin-bottom: 36rpx;
+  display: flex;
+  align-items: center;
+  background: #F3F4F6;
+  border-radius: 32rpx;
+  padding: 0 32rpx;
+  height: 100rpx;
+  gap: 20rpx;
+  transition: all 0.3s;
+  
+  &:focus-within {
+    background: #FFFFFF;
+    box-shadow: 0 0 0 4rpx rgba(251, 191, 36, 0.3);
+  }
 }
 
-.input-label {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 700;
-  color: $pet-text-main;
-  margin-bottom: 16rpx;
+.input-icon {
+  font-size: 36rpx;
+  opacity: 0.6;
 }
 
 .input-field {
-  width: 100%;
-  height: 96rpx;
-  background: $pet-bg-hover;
-  border: 2rpx solid transparent;
-  border-radius: 24rpx;
-  padding: 0 32rpx;
+  flex: 1;
+  height: 100%;
   font-size: 30rpx;
-  color: $pet-text-main;
-  transition: all 0.3s;
-  box-sizing: border-box;
-  
-  &:focus {
-    background: #fff;
-    border-color: $pet-primary;
-    box-shadow: 0 0 0 6rpx $pet-primary-fade;
-  }
+  color: #1F2937;
 }
 
 .input-placeholder {
-  color: $pet-text-placeholder;
+  color: #9CA3AF;
 }
 
-.password-wrapper {
-  position: relative;
+.eye-btn {
+  padding: 16rpx;
+  margin-right: -16rpx;
 }
 
 .eye-icon {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 96rpx;
-  padding: 0 32rpx;
-  display: flex;
-  align-items: center;
-  z-index: 2;
-  
-  text {
-    font-size: 26rpx;
-    color: $pet-secondary;
-    font-weight: 600;
-  }
+  font-size: 32rpx;
 }
 
 /* 提交按钮 */
 .submit-btn {
   width: 100%;
   height: 100rpx;
-  line-height: 100rpx;
-  background: linear-gradient(135deg, $pet-primary, $pet-primary-dark);
-  border: none;
-  border-radius: 50rpx;
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
+  border-radius: 32rpx;
   font-size: 34rpx;
   font-weight: 700;
-  color: $pet-text-main;
-  margin-top: 60rpx;
-  box-shadow: 0 8rpx 24rpx rgba(255, 214, 0, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
-  
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 4rpx 12rpx rgba(255, 214, 0, 0.2);
-  }
+  color: #1F2937;
+  margin-top: 24rpx;
+  border: none;
+  box-shadow: 0 12rpx 32rpx rgba(251, 191, 36, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
   
   &::after {
     border: none;
+  }
+  
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 8rpx 24rpx rgba(251, 191, 36, 0.35);
+  }
+  
+  &.disabled {
+    opacity: 0.5;
+    box-shadow: none;
   }
 }
 
 /* 切换模式 */
 .switch-mode {
   text-align: center;
-  margin-top: 40rpx;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.switch-text {
-  font-size: 28rpx;
-  color: $pet-text-secondary;
-}
-
-.switch-link {
-  font-size: 28rpx;
-  color: $pet-secondary;
-  font-weight: 700;
+  padding: 32rpx 20rpx;
+  
+  .switch-text {
+    font-size: 28rpx;
+    color: #9CA3AF;
+  }
+  
+  .switch-link {
+    font-size: 28rpx;
+    color: #FF8F00;
+    font-weight: 600;
+    margin-left: 8rpx;
+  }
 }
 
 /* reCAPTCHA v2 验证弹窗 */
@@ -451,7 +457,7 @@ const handleSubmit = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -460,11 +466,11 @@ const handleSubmit = async () => {
 }
 
 .recaptcha-content {
-  background: #fff;
-  border-radius: 32rpx;
+  background: #FFFFFF;
+  border-radius: 40rpx;
   padding: 48rpx;
-  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
-  width: 600rpx;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.2);
+  width: 620rpx;
 }
 
 .recaptcha-header {
@@ -477,18 +483,17 @@ const handleSubmit = async () => {
 .recaptcha-title {
   font-size: 34rpx;
   font-weight: 700;
-  color: $pet-text-main;
+  color: #1F2937;
 }
 
 .recaptcha-close {
-  font-size: 44rpx;
-  color: $pet-text-secondary;
+  font-size: 40rpx;
+  color: #9CA3AF;
   line-height: 1;
   padding: 10rpx;
-  opacity: 0.6;
   
   &:active {
-    opacity: 1;
+    color: #1F2937;
   }
 }
 

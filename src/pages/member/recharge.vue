@@ -15,21 +15,24 @@
             :class="['amount-item', { active: selectedAmount === amount }]"
             @click="selectAmount(amount)"
           >
-            <text class="currency-symbol">¥</text>
-            <text class="amount-value">{{ amount }}</text>
-            <view class="check-mark" v-if="selectedAmount === amount">✓</view>
+            <view class="amount-content">
+              <text class="currency-symbol">¥</text>
+              <text class="amount-value">{{ amount }}</text>
+            </view>
+            <view class="check-mark" v-if="selectedAmount === amount">
+              <text class="check-icon">✓</text>
+            </view>
           </view>
         </view>
         
         <!-- 自定义金额 -->
         <view :class="['custom-amount-box', { active: selectedAmount === 0 }]">
-          <text class="custom-label">自定义金额</text>
           <view class="input-row">
             <text class="currency">¥</text>
             <input
               type="digit"
               v-model="customAmount"
-              placeholder="请输入 10-50000 之间的金额"
+              placeholder="请输入自定义金额"
               placeholder-class="input-placeholder"
               class="custom-input"
               @focus="selectedAmount = 0"
@@ -43,9 +46,10 @@
         <text class="section-title">支付方式</text>
         <view class="payment-item active">
           <view class="payment-left">
-            <image class="alipay-icon" src="/static/icon/alipay.png" mode="aspectFit" v-if="false"></image>
-            <!-- 暂用 emoji 代替图片 -->
-            <text class="payment-icon-text">🔷</text>
+            <image class="payment-icon" src="/static/icon/alipay.png" mode="aspectFit" v-if="false"></image>
+            <view class="icon-wrapper alipay">
+              <text class="icon-emoji">🔷</text>
+            </view>
             <text class="payment-name">支付宝支付</text>
           </view>
           <view class="radio-check">
@@ -310,19 +314,18 @@ const checkPaymentResult = async () => {
 
 <style lang="scss">
 page {
-  background-color: #F7F8FA;
+  background-color: #F9FAFB;
 }
 
 .recharge-container {
   min-height: 100vh;
   padding-bottom: 200rpx;
   position: relative;
-  background-color: $pet-bg-base;
 }
 
 .header-bg {
-  height: 200rpx;
-  background: linear-gradient(180deg, #FFF8E1 0%, #F7F8FA 100%);
+  height: 240rpx;
+  background: linear-gradient(180deg, #FFF8E1 0%, #F9FAFB 100%);
   position: absolute;
   top: 0;
   left: 0;
@@ -333,37 +336,37 @@ page {
 .content-wrapper {
   position: relative;
   z-index: 1;
-  padding: 20rpx 30rpx;
+  padding: 24rpx 32rpx;
 }
 
 .card-section {
   background: #FFFFFF;
   border-radius: 32rpx;
-  padding: 40rpx 30rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+  padding: 40rpx 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
 }
 
 .section-title {
   display: block;
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 30rpx;
+  color: #1F2937;
+  margin-bottom: 32rpx;
 }
 
 .amount-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 24rpx;
-  margin-bottom: 40rpx;
+  gap: 20rpx;
+  margin-bottom: 32rpx;
 }
 
 .amount-item {
-  width: calc(33.33% - 16rpx);
-  height: 140rpx;
+  width: calc(33.33% - 14rpx);
+  height: 130rpx;
   background: #FFFFFF;
-  border: 2rpx solid #EEEEEE;
+  border: 2rpx solid #E5E7EB;
   border-radius: 20rpx;
   display: flex;
   flex-direction: column;
@@ -374,35 +377,56 @@ page {
   
   .currency-symbol {
     font-size: 24rpx;
-    color: #666;
+    color: #9CA3AF;
     margin-bottom: 4rpx;
   }
   
   .amount-value {
-    font-size: 40rpx;
+    font-size: 36rpx;
     font-weight: 600;
-    color: #333;
+    color: #1F2937;
+    font-family: DINAlternate-Bold, sans-serif;
+  }
+  
+  .amount-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
   }
 
   &.active {
-    background: #FFFBF0;
-    border-color: #FFC107;
+    background: #FFFBEB;
+    border-color: #FFBF00;
+    box-shadow: 0 8rpx 20rpx rgba(255, 191, 0, 0.1);
     
-    .currency-symbol, .amount-value {
-      color: #FF8F00;
+    .currency-symbol {
+      color: #D97706;
+    }
+    
+    .amount-value {
+      color: #B45309;
     }
   }
   
   .check-mark {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    background: #FFC107;
-    color: #fff;
-    font-size: 20rpx;
-    padding: 2rpx 12rpx;
+    right: -2rpx;
+    bottom: -2rpx;
+    background: #FFBF00;
+    width: 36rpx;
+    height: 28rpx;
     border-top-left-radius: 16rpx;
     border-bottom-right-radius: 18rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .check-icon {
+    font-size: 16rpx;
+    color: #FFFFFF;
+    font-weight: bold;
+    line-height: 1;
   }
 }
 
@@ -410,45 +434,39 @@ page {
   background: #F9FAFB;
   border: 2rpx solid transparent;
   border-radius: 20rpx;
-  padding: 24rpx 30rpx;
+  padding: 24rpx 32rpx;
   transition: all 0.3s;
   
   &.active {
-    background: #FFFBF0;
-    border-color: #FFC107;
+    background: #FFFFFF;
+    border-color: #FFBF00;
+    box-shadow: 0 8rpx 20rpx rgba(255, 191, 0, 0.1);
   }
-}
-
-.custom-label {
-  font-size: 26rpx;
-  color: #666;
-  margin-bottom: 12rpx;
-  display: block;
 }
 
 .input-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  height: 60rpx;
   
   .currency {
-    font-size: 40rpx;
+    font-size: 36rpx;
     font-weight: 600;
-    color: #333;
+    color: #1F2937;
     margin-right: 16rpx;
-    margin-bottom: 6rpx;
   }
   
   .custom-input {
     flex: 1;
-    height: 60rpx;
-    font-size: 48rpx;
+    height: 100%;
+    font-size: 36rpx;
     font-weight: 600;
-    color: #333;
+    color: #1F2937;
   }
   
   .input-placeholder {
     font-size: 28rpx;
-    color: #CCC;
+    color: #9CA3AF;
     font-weight: normal;
   }
 }
@@ -457,51 +475,68 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10rpx 0;
+  padding: 16rpx 0;
   
   .payment-left {
     display: flex;
     align-items: center;
+    gap: 20rpx;
   }
   
-  .payment-icon-text {
-    font-size: 48rpx;
-    margin-right: 20rpx;
+  .icon-wrapper {
+      width: 72rpx;
+      height: 72rpx;
+      border-radius: 16rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &.alipay {
+          background: #E0F2FE;
+          color: #0284C7;
+      }
+  }
+  
+  .icon-emoji {
+      font-size: 32rpx;
+      color: #0284C7;
   }
   
   .payment-name {
     font-size: 30rpx;
-    color: #333;
+    color: #1F2937;
     font-weight: 500;
   }
 }
 
 .radio-check {
-  width: 36rpx;
-  height: 36rpx;
-  border: 2rpx solid #FFC107;
+  width: 40rpx;
+  height: 40rpx;
+  border: 3rpx solid #FFBF00;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 4rpx;
   
   .radio-inner {
-    width: 20rpx;
-    height: 20rpx;
-    background: #FFC107;
+    width: 100%;
+    height: 100%;
+    background: #FFBF00;
     border-radius: 50%;
   }
 }
 
 .tips-section {
-  padding: 20rpx 10rpx;
+  padding: 24rpx 12rpx;
 }
 
 .tips-title {
-  font-size: 28rpx;
-  color: #999;
-  margin-bottom: 20rpx;
   display: block;
+  font-size: 26rpx;
+  color: #6B7280;
+  margin-bottom: 16rpx;
+  font-weight: 600;
 }
 
 .tips-list {
@@ -512,8 +547,8 @@ page {
 
 .tips-item {
   font-size: 24rpx;
-  color: #999;
-  line-height: 1.6;
+  color: #9CA3AF;
+  line-height: 1.5;
 }
 
 .bottom-bar {
@@ -522,8 +557,8 @@ page {
   left: 0;
   right: 0;
   background: #FFFFFF;
-  padding: 20rpx 40rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
   z-index: 100;
   display: flex;
@@ -534,24 +569,24 @@ page {
 .price-info {
   .price-label {
     font-size: 24rpx;
-    color: #666;
-    margin-right: 10rpx;
+    color: #6B7280;
+    margin-right: 12rpx;
   }
   
   .price-value-row {
-    display: flex;
+    display: inline-flex;
     align-items: baseline;
     
     .price-symbol {
       font-size: 32rpx;
-      color: #FF5722;
-      font-weight: 600;
+      color: #FF8F00;
+      font-weight: 700;
       margin-right: 4rpx;
     }
     
     .price-num {
-      font-size: 48rpx;
-      color: #FF5722;
+      font-size: 52rpx;
+      color: #FF8F00;
       font-weight: 700;
       font-family: DINAlternate-Bold, sans-serif;
     }
@@ -559,31 +594,31 @@ page {
 }
 
 .submit-btn {
-  width: 60%;
+  width: 280rpx;
   height: 88rpx;
-  background: linear-gradient(135deg, #FFD54F, #FFB300);
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
   border-radius: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-  box-shadow: 0 8rpx 20rpx rgba(255, 179, 0, 0.3);
-  transition: all 0.3s;
+  font-weight: 700;
+  color: #1F2937;
+  box-shadow: 0 8rpx 20rpx rgba(255, 143, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   
   &::after {
     border: none;
   }
   
   &:active {
-    transform: scale(0.98);
-    box-shadow: 0 4rpx 10rpx rgba(255, 179, 0, 0.2);
+    transform: scale(0.96);
+    box-shadow: 0 4rpx 10rpx rgba(255, 143, 0, 0.15);
   }
   
   &.disabled {
-    background: #E0E0E0;
-    color: #999;
+    background: #E5E7EB;
+    color: #9CA3AF;
     box-shadow: none;
   }
 }

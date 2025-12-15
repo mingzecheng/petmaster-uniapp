@@ -216,10 +216,16 @@ const handleBuy = async () => {
         try {
           uni.showLoading({ title: '创建订单...' })
           
+          // 将商品信息以JSON格式传递给后端
+          const productInfo = {
+            product_id: product.value!.id,
+            quantity: quantity.value
+          }
+          
           const paymentRes = await createAlipayPayment({
             amount: totalPrice,
             subject: `${product.value!.name} x${quantity.value}`,
-            description: `购买商品：${product.value!.name}，数量：${quantity.value}`,
+            description: JSON.stringify(productInfo),
             related_id: product.value!.id,
             related_type: 'product'
           })
@@ -228,7 +234,7 @@ const handleBuy = async () => {
 
           if (paymentRes.pay_url) {
             const payUrl = encodeURIComponent(paymentRes.pay_url)
-            const returnUrl = encodeURIComponent('/pages/product/list')
+            const returnUrl = encodeURIComponent('/pages/order/list')
             
             uni.navigateTo({
               url: `/pages/payment/pay?payUrl=${payUrl}&outTradeNo=${paymentRes.out_trade_no}&amount=${totalPrice}&returnUrl=${returnUrl}`,

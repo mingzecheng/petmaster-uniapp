@@ -43,7 +43,8 @@ interface ResponseData<T = any> {
     message?: string
     detail?: string
     error?: {
-        code: string
+        type?: string
+        code?: string
         message: string
     }
 }
@@ -97,14 +98,24 @@ export const request = <T = any>(config: RequestConfig): Promise<T> => {
                     return
                 }
 
-                // 处理401未授权
-                if (statusCode === 401) {
+                // 检查是否为认证错误（401或ForbiddenError）
+                const isForbiddenError = responseData.error?.type === 'ForbiddenError'
+                const isAuthError = statusCode === 401 || isForbiddenError
+
+                // 处理认证错误：JWT过期或无效
+                if (isAuthError) {
                     clearAuth()
-                    uni.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
+                    if (showError) {
+                        uni.showToast({
+                            title: '登录已过期，请重新登录',
+                            icon: 'none',
+                            duration: 1500
+                        })
+                    }
                     setTimeout(() => {
                         uni.reLaunch({ url: '/pages/login/index' })
                     }, 1500)
-                    reject(new Error('未授权'))
+                    reject(new Error('认证失败'))
                     return
                 }
 

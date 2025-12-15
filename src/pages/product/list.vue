@@ -59,7 +59,7 @@
         <view 
           v-for="(product, index) in products" 
           :key="product.id" 
-          class="product-card"
+          class="store-product-card"
           :style="{ animationDelay: `${index * 0.05}s` }"
           @click="goToDetail(product.id)"
         >
@@ -334,14 +334,8 @@ const formatPrice = (price: number | string): [string, string] => {
 <style lang="scss">
 /* 入场动画 */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30rpx); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes spin {
@@ -351,9 +345,10 @@ const formatPrice = (price: number | string): [string, string] => {
 
 .product-list-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
-  /* 沉浸式头部 */
+  background: #FAFAFA;
 }  
+
+/* 沉浸式头部 */
 .immersive-header {
   position: relative;
   background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
@@ -361,7 +356,7 @@ const formatPrice = (price: number | string): [string, string] => {
   padding-top: calc(var(--status-bar-height, 20px) + 20rpx);
   border-radius: 0 0 48rpx 48rpx;
   overflow: hidden;
-  box-shadow: 0 8rpx 24rpx rgba(255, 179, 0, 0.25);
+  box-shadow: 0 10rpx 30rpx rgba(255, 143, 0, 0.25);
   margin-bottom: 24rpx;
 }
 
@@ -382,17 +377,19 @@ const formatPrice = (price: number | string): [string, string] => {
 }
 
 .c-1 {
-  width: 300rpx;
-  height: 300rpx;
-  top: -100rpx;
-  right: -50rpx;
+  width: 400rpx;
+  height: 400rpx;
+  top: -150rpx;
+  right: -100rpx;
+  filter: blur(20px);
 }
 
 .c-2 {
-  width: 200rpx;
-  height: 200rpx;
-  bottom: -40rpx;
-  left: -40rpx;
+  width: 300rpx;
+  height: 300rpx;
+  bottom: -60rpx;
+  left: -60rpx;
+  filter: blur(15px);
 }
 
 .header-top {
@@ -407,12 +404,13 @@ const formatPrice = (price: number | string): [string, string] => {
   color: #1F2937;
   display: block;
   margin-bottom: 4rpx;
+  text-shadow: 0 2rpx 4rpx rgba(255, 255, 255, 0.2);
 }
 
 .header-subtitle {
   font-size: 24rpx;
-  color: rgba(31, 41, 55, 0.7);
-  font-weight: 500;
+  color: rgba(31, 41, 55, 0.75);
+  font-weight: 600;
 }
 
 /* 搜索框优化 */
@@ -422,10 +420,11 @@ const formatPrice = (price: number | string): [string, string] => {
   display: flex;
   align-items: center;
   height: 88rpx;
-  background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 0 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 28rpx;
+  padding: 0 28rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
   transition: all 0.2s;
 
   &:active {
@@ -434,15 +433,16 @@ const formatPrice = (price: number | string): [string, string] => {
 }
 
 .search-icon {
-  font-size: 32rpx;
-  margin-right: 16rpx;
-  opacity: 0.6;
+  font-size: 36rpx;
+  margin-right: 20rpx;
+  opacity: 0.8;
 }
 
 .search-input {
   flex: 1;
   font-size: 28rpx;
   color: #1E293B;
+  font-weight: 500;
 }
 
 .clear-btn {
@@ -453,6 +453,7 @@ const formatPrice = (price: number | string): [string, string] => {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 16rpx;
   
   text {
     font-size: 24rpx;
@@ -460,51 +461,64 @@ const formatPrice = (price: number | string): [string, string] => {
   }
 }
 
+.search-btn {
+  padding-left: 20rpx;
+  border-left: 2rpx solid #E2E8F0;
+  
+  text {
+    font-size: 28rpx;
+    font-weight: 700;
+    color: #FF8F00;
+  }
+}
+
 /* 分类筛选 */
 .filter-scroll {
   white-space: nowrap;
   padding-bottom: 8rpx;
+  margin-top: 12rpx;
 }
 
 .filter-tabs {
   display: inline-flex;
-  padding: 0 32rpx 20rpx;
-  gap: 16rpx;
+  padding: 0 32rpx 24rpx;
+  gap: 20rpx;
 }
 
 .tab-item {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  padding: 16rpx 24rpx;
+  padding: 16rpx 28rpx;
   background: #FFFFFF;
-  border-radius: 28rpx;
-  min-width: 100rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
-  border: 2rpx solid transparent;
-  transition: all 0.25s;
+  border-radius: 32rpx;
+  min-width: 110rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.03);
+  border: 2rpx solid #F8FAFC;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   
   &.active {
-    background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
-    border-color: #FF8F00;
-    box-shadow: 0 8rpx 24rpx rgba(251, 191, 36, 0.35);
-    transform: scale(1.02);
+    background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+    border-color: #FFB300;
+    box-shadow: 0 10rpx 24rpx rgba(255, 160, 0, 0.25);
+    transform: translateY(-2rpx);
     
     .tab-label {
       color: #1F2937;
-      font-weight: 700;
+      font-weight: 800;
     }
   }
 }
 
 .tab-icon {
-  font-size: 32rpx;
-  margin-bottom: 6rpx;
+  font-size: 36rpx;
+  margin-bottom: 8rpx;
 }
 
 .tab-label {
   font-size: 24rpx;
   color: #64748B;
+  font-weight: 600;
   transition: all 0.25s;
 }
 
@@ -522,28 +536,39 @@ const formatPrice = (price: number | string): [string, string] => {
   padding: 8rpx 8rpx 40rpx;
 }
 
-.product-card {
+/* 独立的商城商品卡片样式 */
+.store-product-card {
   background: #FFFFFF;
-  border-radius: 32rpx;
+  border-radius: 40rpx;
   overflow: hidden;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.04);
+  border: 1rpx solid rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   animation: fadeInUp 0.5s ease-out forwards;
   opacity: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* 确保在 grid 中高度统一 */
   
   &:active {
-    transform: scale(0.96);
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+    transform: scale(0.97);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
   }
 }
 
 .product-image-wrapper {
   position: relative;
-  height: 220rpx;
+  width: 100%; /* 确保宽度充满 */
+  padding-bottom: 100%; /* 1:1 正方形 */
   overflow: hidden;
+  background: #F9FAFB;
+  flex-shrink: 0;
 }
 
 .product-image-bg {
+  position: absolute; /* 绝对定位充满容器 */
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -551,127 +576,122 @@ const formatPrice = (price: number | string): [string, string] => {
   justify-content: center;
   
   &.bg-food { background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); }
-  &.bg-toy { background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%); }
+  &.bg-toy { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); }
   &.bg-supply { background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); }
-  &.bg-wash { background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%); }
-  &.bg-cloth { background: linear-gradient(135deg, #FDF4FF 0%, #FAE8FF 100%); }
-  &.bg-medicine { background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%); }
-  &.bg-default { background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%); }
-}
-
-.product-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  &.bg-wash { background: linear-gradient(135deg, #FAFAFA 0%, #F3F4F6 100%); }
+  &.bg-default { background: linear-gradient(135deg, #FAFAFA 0%, #F1F5F9 100%); }
 }
 
 .product-emoji {
-  font-size: 80rpx;
-  transition: transform 0.3s;
+  font-size: 96rpx;
+  filter: drop-shadow(0 12rpx 16rpx rgba(0,0,0,0.06));
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   
-  .product-card:active & {
-    transform: scale(1.1);
+  .store-product-card:active & {
+    transform: scale(1.15) rotate(5deg);
   }
 }
 
 .stock-badge {
   position: absolute;
   top: 16rpx;
-  left: 16rpx;
-  padding: 6rpx 14rpx;
-  border-radius: 12rpx;
+  right: 16rpx;
+  left: auto;
+  padding: 6rpx 16rpx;
+  border-radius: 100rpx;
+  backdrop-filter: blur(8px);
+  z-index: 10;
   
   text {
     font-size: 20rpx;
-    font-weight: 600;
+    font-weight: 700;
   }
   
   &.low {
-    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
-    text { color: #FFFFFF; }
+    background: rgba(255, 255, 255, 0.9);
+    border: 2rpx solid #F59E0B;
+    text { color: #D97706; }
   }
   
   &.out {
-    background: #6B7280;
+    background: rgba(0, 0, 0, 0.6);
     text { color: #FFFFFF; }
   }
 }
 
 .product-info {
-  padding: 20rpx;
+  padding: 24rpx;
+  flex: 1; /* 撑满剩余空间 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .product-name {
-  display: block;
-  font-size: 28rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 允许2行 */
+  overflow: hidden;
+  font-size: 30rpx;
   font-weight: 700;
-  color: #1E293B;
-  margin-bottom: 8rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.3;
-}
-
-.product-desc {
-  display: block;
-  font-size: 22rpx;
-  color: #94A3B8;
-  margin-bottom: 16rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #1F2937;
+  margin-bottom: 24rpx;
+  line-height: 1.4;
 }
 
 .product-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: auto; /* 底部对齐 */
 }
 
 .price-section {
   display: flex;
   align-items: baseline;
+  color: #E11D48;
 }
 
 .price-label {
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 700;
-  color: #EF4444;
+  margin-right: 4rpx;
 }
 
 .price-value {
-  font-size: 36rpx;
+  font-size: 40rpx;
   font-weight: 800;
-  color: #EF4444;
   font-family: 'DIN Alternate', sans-serif;
-  line-height: 1;
+  letter-spacing: -1rpx;
 }
 
 .price-decimal {
-  font-size: 22rpx;
-  font-weight: 600;
-  color: #EF4444;
+  font-size: 24rpx;
+  font-weight: 700;
 }
 
 .action-btn {
-  width: 64rpx;
-  height: 64rpx;
-  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  width: 68rpx;
+  height: 68rpx;
+  background: linear-gradient(135deg, #FFD700 0%, #FFB300 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 20rpx rgba(30, 41, 59, 0.25);
-  transition: all 0.2s;
+  box-shadow: 0 8rpx 20rpx rgba(255, 179, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.9) rotate(-10deg);
+    box-shadow: 0 4rpx 12rpx rgba(255, 179, 0, 0.2);
   }
 }
 
 .cart-icon {
-  font-size: 28rpx;
+  font-size: 32rpx;
+  color: #1F2937;
+  // 视觉修正：稍微上移一点让 emoji 居中
+  margin-bottom: 4rpx;
 }
 
 /* 加载状态 */
@@ -689,10 +709,10 @@ const formatPrice = (price: number | string): [string, string] => {
 }
 
 .loading-spinner {
-  width: 36rpx;
-  height: 36rpx;
+  width: 40rpx;
+  height: 40rpx;
   border: 4rpx solid #E2E8F0;
-  border-top-color: #FBBF24;
+  border-top-color: #FFB300;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -708,22 +728,23 @@ const formatPrice = (price: number | string): [string, string] => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 100rpx;
+  padding-top: 120rpx;
 }
 
 .empty-illustration {
-  width: 160rpx;
-  height: 160rpx;
-  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+  width: 180rpx;
+  height: 180rpx;
+  background: #F8FAFC;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 32rpx;
+  border: 2rpx dashed #E2E8F0;
   
   text {
-    font-size: 72rpx;
-    opacity: 0.6;
+    font-size: 80rpx;
+    opacity: 0.5;
   }
 }
 

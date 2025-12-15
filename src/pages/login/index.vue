@@ -1,52 +1,66 @@
 <template>
   <view class="login-container">
-    <!-- 背景装饰 -->
-    <view class="bg-decoration top-right"></view>
-    <view class="bg-decoration bottom-left"></view>
+    <!-- 背景装饰：柔和的品牌色光晕 -->
+    <view class="bg-orb top-right"></view>
+    <view class="bg-orb bottom-left"></view>
     
     <view class="login-content">
-      <!-- Logo 区域 -->
+      <!-- Logo 区域：增强品牌展示 -->
       <view class="logo-section">
         <view class="logo-box">
           <text class="logo-emoji">🦴</text>
         </view>
-        <text class="app-title">PetMaster</text>
-        <text class="app-subtitle">爱宠智能管家</text>
+        <view class="title-group">
+          <text class="app-title">PetMaster</text>
+          <text class="app-subtitle">让养宠生活更美好</text>
+        </view>
       </view>
 
-      <!-- 登录表单卡片 -->
+      <!-- 登录表单卡片：悬浮质感 -->
       <view class="form-card">
+        <text class="form-title">{{ isRegister ? '创建账号' : '欢迎回来' }}</text>
+        
         <!-- 用户名输入 -->
-        <view class="input-group">
-          <view class="input-icon">👤</view>
+        <view class="input-group" :class="{ 'focused': focusedField === 'username' }">
+          <view class="input-icon-box">
+            <text class="input-icon">👤</text>
+          </view>
           <input
             type="text"
             v-model="formData.username"
             placeholder="账号 / 手机号"
             placeholder-class="input-placeholder"
             class="input-field"
+            @focus="focusedField = 'username'"
+            @blur="focusedField = ''"
           />
         </view>
 
         <!-- 密码输入 -->
-        <view class="input-group">
-          <view class="input-icon">🔒</view>
+        <view class="input-group" :class="{ 'focused': focusedField === 'password' }">
+          <view class="input-icon-box">
+            <text class="input-icon">🔒</text>
+          </view>
           <input
             :type="showPassword ? 'text' : 'password'"
             v-model="formData.password"
             placeholder="密码"
             placeholder-class="input-placeholder"
             class="input-field"
+            @focus="focusedField = 'password'"
+            @blur="focusedField = ''"
           />
           <view class="eye-btn" @click="togglePassword">
-            <text class="eye-icon">{{ showPassword ? '👀' : '🙈' }}</text>
+            <text class="eye-icon" :class="{ active: showPassword }">{{ showPassword ? '👀' : '🙈' }}</text>
           </view>
         </view>
 
         <!-- 注册模式额外字段 -->
         <template v-if="isRegister">
-          <view class="input-group">
-            <view class="input-icon">📱</view>
+          <view class="input-group" :class="{ 'focused': focusedField === 'mobile' }">
+            <view class="input-icon-box">
+              <text class="input-icon">📱</text>
+            </view>
             <input
               type="number"
               v-model="formData.mobile"
@@ -54,6 +68,8 @@
               placeholder-class="input-placeholder"
               class="input-field"
               maxlength="11"
+              @focus="focusedField = 'mobile'"
+              @blur="focusedField = ''"
             />
           </view>
         </template>
@@ -65,13 +81,13 @@
           :loading="loading" 
           @click="handleSubmit"
         >
-          {{ isRegister ? '注册并登录' : '立即登录' }}
+          {{ isRegister ? '立即注册' : '登 录' }}
         </button>
 
         <!-- 切换模式 -->
         <view class="switch-mode" @click="toggleMode">
-          <text class="switch-text">{{ isRegister ? '已有账号？' : '还没有账号？' }}</text>
-          <text class="switch-link">{{ isRegister ? '去登录' : '去注册' }}</text>
+          <text class="switch-text">{{ isRegister ? '已有账号？' : '新用户？' }}</text>
+          <text class="switch-link">{{ isRegister ? '去登录' : '注册账号' }}</text>
         </view>
       </view>
     </view>
@@ -119,6 +135,9 @@ const isRegister = ref(false)
 
 /** 加载状态 */
 const loading = ref(false)
+
+/** 当前聚焦的输入框 */
+const focusedField = ref('')
 
 /** 用户Store */
 const userStore = useUserStore()
@@ -235,6 +254,7 @@ const handleSubmit = async () => {
       if (success) {
         isRegister.value = false
         formData.password = ''
+        uni.showToast({ title: '注册成功，请登录', icon: 'success' })
       }
     } else {
       // 登录
@@ -272,170 +292,225 @@ const handleSubmit = async () => {
 <style lang="scss">
 .login-container {
   min-height: 100vh;
-  background: #FFFFFF;
+  background: #FFF8E1; /* 极淡的暖黄色背景 */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60rpx 40rpx;
+  padding: 40rpx;
   position: relative;
   overflow: hidden;
 }
 
-/* 背景装饰 */
-.bg-decoration {
+/* 背景光晕 */
+.bg-orb {
   position: absolute;
   border-radius: 50%;
-  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.6;
   
   &.top-right {
-    top: -10%;
-    right: -10%;
-    width: 500rpx;
-    height: 500rpx;
-    background: radial-gradient(circle, rgba(254, 243, 199, 0.8) 0%, transparent 70%);
+    top: -200rpx;
+    right: -200rpx;
+    width: 600rpx;
+    height: 600rpx;
+    background: #FFD54F; /* Amber 300 */
   }
   
   &.bottom-left {
-    bottom: -10%;
-    left: -10%;
+    bottom: -100rpx;
+    left: -100rpx;
     width: 500rpx;
     height: 500rpx;
-    background: radial-gradient(circle, rgba(254, 215, 170, 0.6) 0%, transparent 70%);
+    background: #FFCA28; /* Amber 400 */
   }
 }
 
 .login-content {
   width: 100%;
-  max-width: 680rpx;
+  max-width: 640rpx;
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 /* Logo 区域 */
 .logo-section {
-  text-align: center;
-  margin-bottom: 80rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60rpx;
 }
 
 .logo-box {
-  width: 160rpx;
-  height: 160rpx;
-  background: linear-gradient(135deg, #FFD54F 0%, #FF8F00 100%);
-  border-radius: 48rpx;
+  width: 140rpx;
+  height: 140rpx;
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
+  border-radius: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 32rpx;
-  box-shadow: 0 16rpx 40rpx rgba(245, 158, 11, 0.35);
-  transform: rotate(3deg);
+  margin-bottom: 24rpx;
+  box-shadow: 0 20rpx 40rpx rgba(255, 143, 0, 0.25);
+  transform: rotate(-6deg);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  &:active {
+    transform: scale(0.95) rotate(-6deg);
+  }
 }
 
 .logo-emoji {
-  font-size: 80rpx;
+  font-size: 72rpx;
   filter: drop-shadow(0 4rpx 8rpx rgba(0, 0, 0, 0.1));
+}
+
+.title-group {
+  text-align: center;
 }
 
 .app-title {
   display: block;
-  font-size: 64rpx;
+  font-size: 56rpx;
   font-weight: 900;
   color: #1F2937;
-  letter-spacing: -2rpx;
-  margin-bottom: 12rpx;
+  letter-spacing: -1rpx;
+  margin-bottom: 8rpx;
 }
 
 .app-subtitle {
-  display: block;
   font-size: 28rpx;
-  color: #9CA3AF;
+  color: #6B7280;
   font-weight: 500;
+  letter-spacing: 2rpx;
 }
 
 /* 表单卡片 */
 .form-card {
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 48rpx;
+  padding: 48rpx 40rpx;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.05);
+  border: 2rpx solid rgba(255, 255, 255, 0.8);
 }
 
+.form-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #1F2937;
+  margin-bottom: 48rpx;
+  padding-left: 8rpx;
+}
+
+/* 输入框样式 */
 .input-group {
   display: flex;
   align-items: center;
-  background: #F3F4F6;
-  border-radius: 32rpx;
-  padding: 0 32rpx;
-  height: 100rpx;
-  gap: 20rpx;
-  transition: all 0.3s;
+  background: #F9FAFB;
+  border: 2rpx solid transparent; /* 预留边框位置 */
+  border-radius: 24rpx;
+  padding: 0 24rpx;
+  height: 110rpx;
+  margin-bottom: 24rpx;
+  transition: all 0.3s ease;
   
-  &:focus-within {
+  &.focused {
     background: #FFFFFF;
-    box-shadow: 0 0 0 4rpx rgba(251, 191, 36, 0.3);
+    border-color: #FFBF00;
+    box-shadow: 0 8rpx 24rpx rgba(255, 191, 0, 0.15);
+    transform: translateY(-2rpx);
+    
+    .input-icon {
+      opacity: 1;
+      transform: scale(1.1);
+    }
   }
 }
 
+.input-icon-box {
+  width: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+}
+
 .input-icon {
-  font-size: 36rpx;
-  opacity: 0.6;
+  font-size: 40rpx; // 稍微调大 emoji 尺寸
+  opacity: 0.5;
+  transition: all 0.3s;
 }
 
 .input-field {
   flex: 1;
   height: 100%;
-  font-size: 30rpx;
+  font-size: 32rpx;
   color: #1F2937;
+  font-weight: 500;
+  
+  &::placeholder {
+     color: #9CA3AF;
+     font-weight: 400;
+  }
 }
 
 .input-placeholder {
   color: #9CA3AF;
+  font-weight: 400;
 }
 
 .eye-btn {
-  padding: 16rpx;
-  margin-right: -16rpx;
-}
-
-.eye-icon {
-  font-size: 32rpx;
+  padding: 20rpx;
+  margin-right: -12rpx;
+  
+  .eye-icon {
+    font-size: 36rpx;
+    opacity: 0.4;
+    transition: all 0.3s;
+    
+    &.active {
+      opacity: 0.8;
+    }
+  }
 }
 
 /* 提交按钮 */
 .submit-btn {
+  margin-top: 48rpx;
   width: 100%;
-  height: 100rpx;
+  height: 110rpx;
   background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
-  border-radius: 32rpx;
-  font-size: 34rpx;
-  font-weight: 700;
-  color: #1F2937;
-  margin-top: 24rpx;
-  border: none;
-  box-shadow: 0 12rpx 32rpx rgba(251, 191, 36, 0.45);
+  border-radius: 28rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1F2937;
+  border: none;
+  box-shadow: 0 16rpx 32rpx rgba(255, 143, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   
-  &::after {
-    border: none;
-  }
+  &::after { border: none; }
   
   &:active {
-    transform: scale(0.98);
-    box-shadow: 0 8rpx 24rpx rgba(251, 191, 36, 0.35);
+    transform: scale(0.96);
+    box-shadow: 0 8rpx 16rpx rgba(255, 143, 0, 0.2);
   }
   
   &.disabled {
-    opacity: 0.5;
+    background: #E5E7EB;
+    color: #9CA3AF;
     box-shadow: none;
+    opacity: 1; /* 覆盖默认 opacity */
   }
 }
 
-/* 切换模式 */
+/* 切换模式链接 */
 .switch-mode {
   text-align: center;
-  padding: 32rpx 20rpx;
+  padding-top: 40rpx;
   
   .switch-text {
     font-size: 28rpx;
@@ -445,19 +520,37 @@ const handleSubmit = async () => {
   .switch-link {
     font-size: 28rpx;
     color: #FF8F00;
-    font-weight: 600;
-    margin-left: 8rpx;
+    font-weight: 700;
+    margin-left: 12rpx;
+    position: relative;
+    padding-bottom: 4rpx;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2rpx;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    &:active {
+      opacity: 0.7;
+    }
   }
 }
 
-/* reCAPTCHA v2 验证弹窗 */
+/* reCAPTCHA v2 验证弹窗 (保持原有功能样式，稍作视觉调整) */
 .recaptcha-modal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;

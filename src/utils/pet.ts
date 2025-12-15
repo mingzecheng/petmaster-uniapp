@@ -46,10 +46,13 @@ export const getPetDefaultImage = (species?: string): string => {
 }
 
 /**
- * 获取宠物头像（优先使用自定义，否则使用默认）
+ * 获取宠物头像（强制使用本地静态资源）
+ * @param _imageUrl - (已废弃) 以前的图片URL
+ * @param species - 宠物品种
  */
-export const getPetAvatar = (imageUrl?: string, species?: string): string => {
-    return imageUrl || getPetDefaultImage(species)
+export const getPetAvatar = (_imageUrl?: string, species?: string): string => {
+    // 强制统一使用本地静态资源
+    return getPetDefaultImage(species)
 }
 
 /**

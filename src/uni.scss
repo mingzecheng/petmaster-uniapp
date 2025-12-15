@@ -16,39 +16,47 @@ $pet-secondary: #2979FF;
 $pet-secondary-light: #E3F2FD;
 $pet-secondary-fade: rgba(41, 121, 255, 0.08);
 
+/* 高级渐变色 (Premium Gradients) */
+$pet-gradient-primary: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+$pet-gradient-mesh: radial-gradient(at 0% 0%, rgba(255, 223, 137, 0.4) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 248, 225, 0.5) 0px, transparent 50%);
+$pet-gradient-card: linear-gradient(145deg, #FFFFFF 0%, #FFFBEB 100%);
+$pet-gradient-dark: linear-gradient(135deg, #2C2C2C 0%, #1A1A1A 100%);
+
 /* 功能色 */
 $pet-success: #00C853;
 $pet-warning: #FF9100;
 $pet-danger: #FF3D00;
 $pet-info: #90A4AE;
 
-/* 背景体系 - 更鲜艳的黄色调 */
-$pet-bg-base: #FFF8DC;
+/* 背景体系 - 更通透的浅暖色调 */
+$pet-bg-base: #FAFAFA;
 $pet-bg-card: #FFFFFF;
-$pet-bg-hover: #FFECB3;
-$pet-bg-input: #FFFDE7;
+$pet-bg-hover: #FFF8E1;
+$pet-bg-input: #F5F7FA;
 
 /* 文本体系 */
-$pet-text-main: #1A1A1A;
-$pet-text-regular: #333333;
-$pet-text-secondary: #666666;
-$pet-text-placeholder: #999999;
-$pet-text-disabled: #CCCCCC;
+$pet-text-main: #1F2937;
+$pet-text-regular: #4B5563;
+$pet-text-secondary: #9CA3AF;
+$pet-text-placeholder: #D1D5DB;
+$pet-text-disabled: #E5E7EB;
 $pet-text-on-primary: #1A1A1A;
 
 /* 边框体系 */
-$pet-border: #E0E0E0;
-$pet-border-light: #F0F0F0;
+$pet-border: #E5E7EB;
+$pet-border-light: #F3F4F6;
 
-/* 阴影体系 - 增强品牌色阴影 */
-$pet-shadow-sm: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
-$pet-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
-$pet-shadow-lg: 0 16rpx 48rpx rgba(0, 0, 0, 0.1);
-$pet-shadow-float: 0 12rpx 32rpx rgba(249, 168, 37, 0.35);
+/* 阴影体系 - 更柔和的弥散阴影 */
+$pet-shadow-sm: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+$pet-shadow: 0 8rpx 24rpx rgba(149, 157, 165, 0.1);
+$pet-shadow-lg: 0 20rpx 48rpx rgba(0, 0, 0, 0.08);
+$pet-shadow-float: 0 16rpx 40rpx rgba(255, 191, 0, 0.25);
+$pet-shadow-premium: 0 10rpx 30rpx -10rpx rgba(0, 0, 0, 0.15);
 
 /* 倒角体系 */
-$pet-radius-sm: 12rpx;
-$pet-radius: 20rpx;
+$pet-radius-sm: 16rpx;
+$pet-radius: 24rpx;
 $pet-radius-lg: 32rpx;
 $pet-radius-full: 9999rpx;
 

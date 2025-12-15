@@ -82,6 +82,13 @@
     <!-- 功能菜单 -->
     <view class="section menu-section">
       <view class="section-card">
+        <view class="menu-item" @click="goTo('/pages/order/list')">
+          <view class="menu-icon color-yellow">
+            <text>📦</text>
+          </view>
+          <text class="menu-name">我的订单</text>
+          <text class="menu-arrow">›</text>
+        </view>
         <view class="menu-item" @click="goTo('/pages/appointment/list')">
           <view class="menu-icon color-blue">
             <text>📅</text>
@@ -562,6 +569,7 @@ const handleLogout = () => {
     font-size: 32rpx;
   }
   
+  &.color-yellow { background: #FEF3C7; }
   &.color-blue { background: #DBEAFE; }
   &.color-orange { background: #FFEDD5; }
   &.color-green { background: #D1FAE5; }

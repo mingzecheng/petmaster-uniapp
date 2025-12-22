@@ -60,6 +60,9 @@
         <view v-if="loading" class="loading-box">
           <text>加载中...</text>
         </view>
+        
+        <!-- 底部安全区域 -->
+        <view class="safe-area-bottom"></view>
       </scroll-view>
     </view>
   </view>
@@ -277,15 +280,15 @@ const formatTime = (timeStr: string): string => {
 
 /* 记录列表 */
 .records-scroll {
-  height: calc(100vh - 280rpx);
+  height: calc(100vh - var(--status-bar-height, 44px) - 200rpx);
   padding: 0 32rpx;
+  box-sizing: border-box;
 }
 
 .records-list {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
-  padding-bottom: 40rpx;
 }
 
 .record-card {
@@ -409,5 +412,11 @@ const formatTime = (timeStr: string): string => {
     font-size: 26rpx;
     color: #9CA3AF;
   }
+}
+
+/* 底部安全区域 */
+.safe-area-bottom {
+  height: env(safe-area-inset-bottom);
+  padding-bottom: 40rpx;
 }
 </style>

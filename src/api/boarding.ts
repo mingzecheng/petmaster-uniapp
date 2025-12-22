@@ -2,7 +2,7 @@
  * @description 寄养管理API
  */
 
-import { get, post, del } from '@/utils/request'
+import { get, post, del, patch } from '@/utils/request'
 
 /** 寄养状态 */
 export type BoardingStatus = 'pending' | 'active' | 'completed' | 'cancelled'
@@ -69,5 +69,5 @@ export const createBoarding = (data: BoardingCreate) => {
  * @param boardingId - 寄养ID
  */
 export const cancelBoarding = (boardingId: number) => {
-    return del(`/boarding/${boardingId}`)
+    return patch<Boarding>(`/boarding/${boardingId}/cancel`, {})
 }

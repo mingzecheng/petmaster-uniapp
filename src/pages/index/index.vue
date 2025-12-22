@@ -33,13 +33,11 @@
             <text class="pet-desc">{{ userPet.breed || '未知品种' }} · {{ calculateAge(userPet.birthday) }} · {{ userPet.weight ? userPet.weight + 'kg' : '--' }}</text>
           </view>
           <view class="pet-avatar-box">
-          <view class="pet-avatar-box">
             <image 
               class="pet-avatar-img" 
               :src="getPetAvatar(userPet.image_url, userPet.species)" 
               mode="aspectFill"
             ></image>
-          </view>
           </view>
         </view>
       </view>
@@ -90,37 +88,68 @@
 
       <!-- 精选商品 -->
       <view class="section">
-        <view class="section-header">
-          <text class="section-title">精选商品</text>
-          <text class="section-more" @click="goToProducts">全部 ›</text>
+        <view class="section-header-enhanced">
+          <view class="header-left">
+            <text class="section-title">精选商品</text>
+            <text class="section-subtitle">为您的爱宠精选优质好物</text>
+          </view>
+          <view class="header-right" @click="goToProducts">
+            <text class="more-text">更多</text>
+            <text class="arrow">›</text>
+          </view>
         </view>
-        <scroll-view class="products-scroll" scroll-x enable-flex show-scrollbar="false">
-          <view class="products-flex">
+        
+        <scroll-view class="products-scroll" scroll-x show-scrollbar="false">
+          <view class="products-wrapper">
+            <!-- 商品卡片 -->
             <view 
               v-for="product in products" 
               :key="product.id" 
-              class="home-product-card"
+              class="product-card-enhanced"
               @click="goToProductDetail(product.id)"
             >
-              <view class="product-image-box">
-                <text class="product-emoji">{{ getProductIcon(product.category) }}</text>
-                <view v-if="product.stock <= 0" class="sold-out-mask">
+              <!-- 图片区域 -->
+              <view class="product-img-wrapper" :class="getProductBgClass(product.category)">
+                <text class="product-icon">{{ getProductIcon(product.category) }}</text>
+                <!-- 库存标签 -->
+                <view v-if="product.stock <= 5 && product.stock > 0" class="stock-badge low">
+                  <text>仅剩{{product.stock}}件</text>
+                </view>
+                <view v-else-if="product.stock <= 0" class="stock-badge sold-out">
                   <text>已售罄</text>
                 </view>
               </view>
-              <view class="product-info">
-                <text class="product-name">{{ product.name }}</text>
-                <view class="product-bottom">
-                  <view class="product-price">
-                    <text class="price-symbol">¥</text>
-                    <text class="price-value">{{ product.price }}</text>
+              
+              <!-- 信息区域 -->
+              <view class="product-details">
+                <!-- 分类标签 -->
+                <view class="category-tag">
+                  <text>{{ product.category || '精选' }}</text>
+                </view>
+                
+                <!-- 商品名称 -->
+                <text class="product-title">{{ product.name }}</text>
+                
+                <!-- 底部价格和操作 -->
+                <view class="product-footer">
+                  <view class="price-box">
+                    <text class="price-currency">¥</text>
+                    <text class="price-number">{{ formatPrice(product.price) }}</text>
                   </view>
-                  <!-- 首页卡片精简展示，不显示库存标签 -->
-                  <view class="action-btn-mini">
-                    <text>➜</text>
+                  <view class="add-cart-btn" @click.stop="handleQuickBuy(product)">
+                    <text class="cart-icon">🛒</text>
                   </view>
                 </view>
               </view>
+            </view>
+            
+            <!-- 查看更多卡片 -->
+            <view class="more-card" @click="goToProducts">
+              <view class="more-icon-box">
+                <text class="more-icon">→</text>
+              </view>
+              <text class="more-label">查看全部</text>
+              <text class="more-count">更多商品</text>
             </view>
           </view>
         </scroll-view>
@@ -305,6 +334,28 @@ const getProductIcon = (category?: string): string => {
 }
 
 /**
+ * 获取商品背景色class
+ */
+const getProductBgClass = (category?: string): string => {
+  const classes: Record<string, string> = {
+    '食品': 'bg-food',
+    '玩具': 'bg-toy',
+    '用品': 'bg-supply',
+    '服饰': 'bg-cloth',
+    '药品': 'bg-medicine'
+  }
+  return classes[category || ''] || 'bg-default'
+}
+
+/**
+ * 格式化价格
+ */
+const formatPrice = (price: number | string): string => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price
+  return numPrice.toFixed(2)
+}
+
+/**
  * 跳转到服务
  */
 const goToService = (type: string) => {
@@ -370,6 +421,21 @@ const goToMine = () => {
 const goToPetAdd = () => {
   if (!userStore.checkAuth()) return
   uni.navigateTo({ url: '/pages/pet/add' })
+}
+
+/**
+ * 快速购买商品
+ */
+const handleQuickBuy = (product: Product) => {
+  if (!userStore.checkAuth()) return
+  
+  if (product.stock <= 0) {
+    uni.showToast({ title: '商品已售罄', icon: 'none' })
+    return
+  }
+  
+  // 直接跳转到商品详情页
+  goToProductDetail(product.id)
 }
 </script>
 
@@ -808,37 +874,87 @@ const goToPetAdd = () => {
   }
 }
 
+/* 增强版区块标题 */
+.section-header-enhanced {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36rpx;
+  padding: 0 8rpx;
+}
+
+.header-left {
+  flex: 1;
+}
+
+.section-subtitle {
+  display: block;
+  font-size: 24rpx;
+  color: #9CA3AF;
+  margin-top: 8rpx;
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 10rpx 20rpx;
+  background: #FFFFFF;
+  border-radius: 100rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.2s;
+  
+  &:active {
+    transform: scale(0.96);
+    background: #F9FAFB;
+  }
+}
+
+.more-text {
+  font-size: 26rpx;
+  color: #6B7280;
+  font-weight: 600;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #9CA3AF;
+  margin-left: 2rpx;
+}
+
 /* 服务网格 - 2x2 布局 */
 .service-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 32rpx;
+  gap: 24rpx;
 }
 
 .service-card {
   background: #FFFFFF;
-  border-radius: 40rpx;
-  padding: 36rpx;
-  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.03);
+  border-radius: 32rpx;
+  padding: 28rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
   border: 1rpx solid rgba(0, 0, 0, 0.02);
   transition: all 0.3s ease;
   
   &:active {
     transform: scale(0.98);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
   }
 }
 
 .service-card-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 28rpx;
+  align-items: center;
+  margin-bottom: 20rpx;
 }
 
 .service-icon-box {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 32rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -875,198 +991,268 @@ const goToPetAdd = () => {
 }
 
 .service-icon-text {
-  font-size: 44rpx;
+  font-size: 36rpx;
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 4rpx 4rpx rgba(0,0,0,0.05));
+  filter: drop-shadow(0 2rpx 2rpx rgba(0,0,0,0.05));
 }
 
 .service-price-tag {
-  background: #FAFAFA;
-  padding: 10rpx 20rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid #F3F4F6;
+  background: linear-gradient(135deg, #FFC107 0%, #FFB300 100%);
+  padding: 8rpx 16rpx;
+  border-radius: 100rpx;
   
   text {
-    font-size: 26rpx;
-    font-weight: 700;
-    color: #374151;
+    font-size: 24rpx;
+    font-weight: 800;
+    color: #1F2937;
   }
 }
 
 .service-card-bottom {
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 6rpx;
 }
 
 .service-card-name {
-  font-size: 32rpx;
+  font-size: 28rpx;
   font-weight: 700;
   color: #111827;
 }
 
 .service-card-duration {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #9CA3AF;
   font-weight: 500;
 }
 
-/* 精选商品 - 横向滚动布局 */
+/* 精选商品 - 横向滑动布局 */
 .products-scroll {
   width: 100%;
   white-space: nowrap;
+  margin: 0 -40rpx;
 }
 
-.products-flex {
+.products-wrapper {
   display: flex;
-  padding: 0 40rpx 40rpx 40rpx; /* 左右padding对齐主内容，底部留给阴影 */
-  gap: 24rpx;
+  padding: 0 40rpx 24rpx 40rpx;
+  gap: 20rpx;
 }
 
-.home-product-card {
+/* 增强版商品卡片 */
+.product-card-enhanced {
   background: #FFFFFF;
   border-radius: 36rpx;
   padding: 20rpx;
   display: flex;
-  flex-direction: column; /* 垂直布局 */
-  width: 260rpx; /* 固定宽度 */
-  flex-shrink: 0; /* 防止压缩 */
-  gap: 20rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
-  border: 1rpx solid rgba(255, 255, 255, 0.6);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-direction: column;
+  width: 280rpx;
+  flex-shrink: 0;
+  gap: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
   
-  /* 玻璃光泽 */
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 70%);
-    transform: translateX(-100%);
-    transition: transform 0.6s;
-  }
-
   &:active {
-    transform: scale(0.96);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-    background: #FAFAFA;
-    
-    &::after {
-      transform: translateX(100%);
-    }
+    transform: scale(0.98);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
   }
 }
 
-.product-image-box {
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* 商品图片区域 */
+.product-img-wrapper {
   width: 100%;
-  height: 220rpx; /* 加高图片区域 */
-  background: #F9FAFB;
+  height: 200rpx;
   border-radius: 28rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
-  border: 1rpx solid #F3F4F6;
+  border: 1rpx solid rgba(0, 0, 0, 0.02);
   flex-shrink: 0;
-}
-
-.product-emoji {
-  font-size: 96rpx; /* 更大的 emoji */
-  filter: drop-shadow(0 12rpx 16rpx rgba(0,0,0,0.08));
-  transition: transform 0.3s;
   
-  .home-product-card:active & {
-    transform: scale(1.1) rotate(5deg);
-  }
+  /* 背景色渐变 */
+  &.bg-food { background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); }
+  &.bg-toy { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); }
+  &.bg-supply { background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); }
+  &.bg-cloth { background: linear-gradient(135deg, #FDF4FF 0%, #FAE8FF 100%); }
+  &.bg-medicine { background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); }
+  &.bg-default { background: linear-gradient(135deg, #FAFAFA 0%, #F1F5F9 100%); }
 }
 
-.sold-out-mask {
+.product-icon {
+  font-size: 80rpx;
+  filter: drop-shadow(0 8rpx 12rpx rgba(0,0,0,0.06));
+}
+
+/* 库存徽章 */
+.stock-badge {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  top: 16rpx;
+  right: 16rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 100rpx;
+  backdrop-filter: blur(8px);
+  font-size: 22rpx;
+  font-weight: 700;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   
-  text {
-    color: #fff;
-    font-size: 24rpx;
-    font-weight: 600;
-    background: rgba(0,0,0,0.6);
-    padding: 6rpx 20rpx;
-    border-radius: 100rpx;
+  &.low {
+    background: rgba(255, 237, 213, 0.95);
+    color: #EA580C;
+    border: 2rpx solid rgba(234, 88, 12, 0.2);
+  }
+  
+  &.sold-out {
+    background: rgba(0, 0, 0, 0.7);
+    color: #FFFFFF;
   }
 }
 
-.product-info {
+/* 商品信息区域 */
+.product-details {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12rpx;
 }
 
-.product-name {
-  font-size: 28rpx;
+/* 分类标签 */
+.category-tag {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 6rpx 16rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  border: 1rpx solid #E5E7EB;
+  
+  text {
+    font-size: 20rpx;
+    color: #6B7280;
+    font-weight: 600;
+  }
+}
+
+/* 商品标题 */
+.product-title {
+  font-size: 26rpx;
   font-weight: 700;
   color: #1F2937;
   line-height: 1.4;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 4rpx;
+  white-space: normal;
 }
 
-.product-bottom {
+/* 底部价格和操作 */
+.product-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 8rpx;
 }
 
-.product-price {
+.price-box {
   display: flex;
   align-items: baseline;
   color: #E11D48;
-  
-  .price-symbol {
-    font-size: 24rpx;
-    font-weight: 700;
-    margin-right: 2rpx;
-  }
-  
-  .price-value {
-    font-size: 36rpx;
-    font-weight: 800;
-    font-family: 'DIN Alternate', sans-serif;
-    letter-spacing: -1rpx;
-  }
 }
 
-.action-btn-mini {
-  width: 48rpx;
-  height: 48rpx;
-  background: #F3F4F6;
+.price-currency {
+  font-size: 26rpx;
+  font-weight: 700;
+  margin-right: 4rpx;
+}
+
+.price-number {
+  font-size: 42rpx;
+  font-weight: 800;
+  font-family: 'DIN Alternate', sans-serif;
+  letter-spacing: -1rpx;
+}
+
+/* 加入购物车按钮 */
+.add-cart-btn {
+  width: 68rpx;
+  height: 68rpx;
+  background: linear-gradient(135deg, #FFD700 0%, #FFB300 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 6rpx 16rpx rgba(255, 179, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   
-  text {
-    font-size: 20rpx;
-    color: #9CA3AF;
-    font-weight: 700;
+  .cart-icon {
+    font-size: 34rpx;
   }
+  
+  &:active {
+    transform: scale(0.9) rotate(-15deg);
+    box-shadow: 0 3rpx 8rpx rgba(255, 179, 0, 0.25);
+  }
+}
+
+/* 查看更多卡片 */
+.more-card {
+  background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+  border-radius: 44rpx;
+  padding: 28rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 200rpx;
+  flex-shrink: 0;
+  gap: 20rpx;
+  border: 2rpx dashed #D1D5DB;
+  transition: all 0.3s;
+  
+  &:active {
+    transform: scale(0.96);
+    background: #E5E7EB;
+  }
+}
+
+.more-icon-box {
+  width: 80rpx;
+  height: 80rpx;
+  background: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.more-icon {
+  font-size: 48rpx;
+  color: #9CA3AF;
+  font-weight: 700;
+}
+
+.more-label {
+  font-size: 28rpx;
+  color: #4B5563;
+  font-weight: 700;
+}
+
+.more-count {
+  font-size: 22rpx;
+  color: #9CA3AF;
+  font-weight: 500;
 }
 
 .safe-area-bottom {

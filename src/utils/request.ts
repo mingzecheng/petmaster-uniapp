@@ -206,5 +206,5 @@ export const patch = <T = any>(
     data?: any,
     config?: Partial<RequestConfig>
 ): Promise<T> => {
-    return request<T>({ url, method: 'TRACE', data, ...config })
+    return request<T>({ url, method: 'PUT', data, ...config })
 }

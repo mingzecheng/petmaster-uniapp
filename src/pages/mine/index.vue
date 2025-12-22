@@ -10,8 +10,8 @@
               <text class="avatar-emoji">{{ getAvatarEmoji() }}</text>
             </view>
           </view>
-          <view v-if="isLoggedIn" class="level-badge">
-            LV.{{ userInfo?.member_level?.level || 1 }}
+          <view v-if="isLoggedIn && userInfo?.member_level" class="level-badge">
+            LV.{{ userInfo.member_level.level || 1 }}
           </view>
         </view>
         <view class="user-info-content">
@@ -19,8 +19,8 @@
           <view class="user-level-tag" v-if="isLoggedIn">
             <text class="level-icon">👑</text>
             <text class="level-name">{{ userInfo?.member_level?.name || '普通会员' }}</text>
-            <text class="level-discount" v-if="userInfo?.member_level?.discount_rate">
-              {{ (userInfo.member_level.discount_rate * 10).toFixed(1) }}折特权
+            <text class="level-discount" v-if="userInfo?.member_level?.discount_rate != null">
+              {{ ((userInfo?.member_level?.discount_rate || 1) * 10).toFixed(1) }}折特权
             </text>
           </view>
           <text class="user-subtitle" v-else>登录享受更多权益</text>
@@ -30,20 +30,20 @@
 
       <!-- 数据统计 -->
       <view v-if="isLoggedIn" class="stats-row">
-        <view class="stat-item" @click="goTo('/pages/member/index')">
+        <view class="stat-item" @click="goToMemberCard">
           <view class="stat-value">
             <text class="stat-currency">¥</text>
-            <text class="stat-num">{{ userInfo?.member_card?.balance || '0.00' }}</text>
+            <text class="stat-num">{{ cardBalance }}</text>
           </view>
           <text class="stat-label">卡内余额</text>
         </view>
-        <view class="stat-item" @click="goTo('/pages/records/index')">
-          <text class="stat-num">{{ userInfo?.points || 0 }}</text>
+        <view class="stat-divider"></view>
+        <view class="stat-item" @click="goToPoints">
+          <view class="stat-value">
+            <text class="stat-num points-num">{{ userPoints }}</text>
+            <text class="stat-unit">积分</text>
+          </view>
           <text class="stat-label">当前积分 ›</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-num">3</text>
-          <text class="stat-label">优惠券</text>
         </view>
       </view>
     </view>
@@ -61,17 +61,27 @@
           </view>
         </view>
         <view class="pets-list">
-          <view class="pet-item" v-for="i in 2" :key="i" @click="goTo('/pages/pet/index')">
+          <view v-if="myPets.length === 0" class="no-pets">
+            <text class="no-pets-text">暂无宠物，点击右上角添加</text>
+          </view>
+          <view class="pet-item" v-for="pet in myPets" :key="pet.id" @click="goToPetDetail(pet.id)">
             <view class="pet-avatar">
               <image 
-                :src="i === 1 ? '/static/dog.png' : '/static/cat.png'" 
+                v-if="pet.image_url"
+                :src="pet.image_url" 
+                class="pet-image"
+                mode="aspectFill"
+              />
+              <image 
+                v-else
+                :src="getPetImage(pet.species)" 
                 class="pet-image"
                 mode="aspectFill"
               />
             </view>
             <view class="pet-info">
-              <text class="pet-name">{{ i === 1 ? '旺财' : '咪咪' }}</text>
-              <text class="pet-desc">{{ i === 1 ? '柴犬 · 公 · 12.5kg' : '英短 · 母 · 4.2kg' }}</text>
+              <text class="pet-name">{{ pet.name }}</text>
+              <text class="pet-desc">{{ formatPetDesc(pet) }}</text>
             </view>
             <text class="pet-arrow">›</text>
           </view>
@@ -143,6 +153,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { getPets, type Pet } from '@/api/pet'
+import { getMyMemberCard, type MemberCard } from '@/api/member'
 
 /** 状态栏高度 */
 const statusBarHeight = ref(0)
@@ -156,6 +168,25 @@ const isLoggedIn = computed(() => userStore.isLoggedIn)
 /** 用户信息 */
 const userInfo = computed(() => userStore.userInfo)
 
+/** 会员卡数据 */
+const memberCard = ref<MemberCard | null>(null)
+
+/** 我的宠物列表 */
+const myPets = ref<Pet[]>([])
+
+/** 卡内余额 */
+const cardBalance = computed(() => {
+  const balance = memberCard.value?.balance
+  // balance是字符串格式，如果不存在或为空字符串，返回默认值
+  if (!balance) return '0.00'
+  return balance
+})
+
+/** 用户积分 */
+const userPoints = computed(() => {
+  return userInfo.value?.points || 0
+})
+
 /**
  * 初始化
  */
@@ -168,6 +199,95 @@ onMounted(async () => {
     await userStore.fetchUserInfo()
   }
 })
+
+/**
+ * 页面显示时刷新数据
+ */
+import { onShow } from '@dcloudio/uni-app'
+onShow(async () => {
+  if (isLoggedIn.value) {
+    await userStore.fetchUserInfo()
+    await loadMemberCard()
+    await loadMyPets()
+  }
+})
+
+/**
+ * 加载会员卡数据
+ */
+const loadMemberCard = async () => {
+  if (!userInfo.value?.id) return
+  
+  try {
+    const card = await getMyMemberCard(userInfo.value.id)
+    memberCard.value = card
+  } catch (error: any) {
+    console.log('加载会员卡失败:', error.message)
+    memberCard.value = null
+  }
+}
+
+/**
+ * 加载我的宠物列表
+ */
+const loadMyPets = async () => {
+  if (!userInfo.value?.id) return
+  
+  try {
+    const pets = await getPets({ owner_id: userInfo.value.id, limit: 5 })
+    myPets.value = pets
+  } catch (error: any) {
+    console.log('加载宠物失败:', error.message)
+    myPets.value = []
+  }
+}
+
+/**
+ * 获取宠物emoji
+ */
+const getPetEmoji = (species?: string): string => {
+  if (!species) return '🐾'
+  const lower = species.toLowerCase()
+  if (lower.includes('狗') || lower.includes('dog') || lower.includes('犬')) return '🐕'
+  if (lower.includes('猫') || lower.includes('cat')) return '🐱'
+  if (lower.includes('鸟') || lower.includes('bird')) return '🐦'
+  if (lower.includes('鱼') || lower.includes('fish')) return '🐟'
+  if (lower.includes('兔') || lower.includes('rabbit')) return '🐰'
+  if (lower.includes('仓鼠') || lower.includes('hamster')) return '🐹'
+  return '🐾'
+}
+
+/**
+ * 获取宠物默认图片
+ */
+const getPetImage = (species?: string): string => {
+  if (!species) return '/static/pet-default.png'
+  const lower = species.toLowerCase()
+  if (lower.includes('狗') || lower.includes('dog') || lower.includes('犬')) return '/static/dog.png'
+  if (lower.includes('猫') || lower.includes('cat')) return '/static/cat.png'
+  if (lower.includes('兔') || lower.includes('rabbit')) return '/static/rabbit.png'
+  if (lower.includes('仓鼠') || lower.includes('hamster')) return '/static/hamster.png'
+  return '/static/pet-default.png'
+}
+
+/**
+ * 格式化宠物描述
+ */
+const formatPetDesc = (pet: Pet): string => {
+  const parts: string[] = []
+  if (pet.species) parts.push(pet.species)
+  if (pet.breed) parts.push(pet.breed)
+  if (pet.gender) parts.push(pet.gender === 'male' ? '公' : '母')
+  if (pet.weight) parts.push(`${pet.weight}kg`)
+  return parts.join(' · ') || '未填写信息'
+}
+
+/**
+ * 跳转宠物详情
+ */
+const goToPetDetail = (petId: number) => {
+  uni.navigateTo({ url: `/pages/pet/detail?id=${petId}` })
+}
 
 /**
  * 跳转登录
@@ -217,6 +337,22 @@ const goTo = (url: string) => {
   } else {
     uni.navigateTo({ url })
   }
+}
+
+/**
+ * 跳转会员卡
+ */
+const goToMemberCard = () => {
+  if (!userStore.checkAuth()) return
+  uni.navigateTo({ url: '/pages/member/index' })
+}
+
+/**
+ * 查看积分明细
+ */
+const goToPoints = () => {
+  if (!userStore.checkAuth()) return
+  uni.navigateTo({ url: '/pages/points/index' })
 }
 
 /**
@@ -366,51 +502,63 @@ const handleLogout = () => {
   color: #6B7280;
 }
 
-/* 数据统计 */
+/* 统计数据 */
 .stats-row {
   display: flex;
-  justify-content: space-between;
-  padding: 0 20rpx;
+  align-items: center;
+  gap: 8rpx;
+  padding: 32rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 32rpx;
+  backdrop-filter: blur(16px);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-item {
   flex: 1;
   text-align: center;
+  transition: all 0.2s;
+  padding: 12rpx;
+  border-radius: 20rpx;
   
-  &:first-child {
-    text-align: left;
+  &:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.05);
   }
-  
-  &:last-child {
-    text-align: right;
-  }
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 60rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 1rpx;
 }
 
 .stat-value {
   display: flex;
   align-items: baseline;
-  justify-content: flex-start;
+  justify-content: center;
   margin-bottom: 8rpx;
 }
 
 .stat-currency {
-  font-size: 24rpx;
-  font-weight: 700;
+  font-size: 28rpx;
   color: #FFBF00;
+  font-weight: 700;
+  margin-right: 4rpx;
 }
 
 .stat-num {
-  display: block;
   font-size: 44rpx;
   font-weight: 800;
   color: #FFFFFF;
-  font-family: DINAlternate-Bold, sans-serif;
-  margin-bottom: 8rpx;
+  font-family: 'DIN Alternate', sans-serif;
+  letter-spacing: -1rpx;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
 }
 
@@ -516,6 +664,30 @@ const handleLogout = () => {
 .pet-image {
   width: 100%;
   height: 100%;
+}
+
+.pet-emoji {
+  font-size: 48rpx;
+}
+
+.no-pets {
+  padding: 40rpx;
+  text-align: center;
+}
+
+.no-pets-text {
+  font-size: 26rpx;
+  color: #9CA3AF;
+}
+
+.points-num {
+  color: #FFB300;
+}
+
+.stat-unit {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 8rpx;
 }
 
 .pet-info {

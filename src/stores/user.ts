@@ -20,7 +20,13 @@ export interface UserInfo {
     member_level?: {
         id: number
         name: string
-        discount: number
+        level?: number
+        discount?: number
+        discount_rate?: number
+    }
+    member_card?: {
+        id: number
+        balance: number
     }
 }
 

@@ -73,8 +73,8 @@
         </view>
       </view>
       <view class="action-right">
-        <button class="buy-btn" :loading="loading" :disabled="!product || product.stock <= 0" @click="handleBuy">
-          <text>{{ product?.stock <= 0 ? '暂时缺货' : '立即购买' }}</text>
+        <button class="buy-btn" :loading="loading" :disabled="!product || (product.stock ?? 0) <= 0" @click="handleBuy">
+          <text>{{ (product?.stock ?? 0) <= 0 ? '暂时缺货' : '立即购买' }}</text>
         </button>
       </view>
     </view>
@@ -207,53 +207,10 @@ const handleBuy = async () => {
   const unitPrice = typeof product.value.price === 'string' ? parseFloat(product.value.price) : product.value.price
   const totalPrice = unitPrice * quantity.value
 
-  uni.showModal({
-    title: '确认购买',
-    content: `商品: ${product.value.name}\n数量: ${quantity.value}\n总价: ¥${totalPrice.toFixed(2)}`,
-    success: async (res) => {
-      if (res.confirm) {
-        loading.value = true
-        try {
-          uni.showLoading({ title: '创建订单...' })
-          
-          // 将商品信息以JSON格式传递给后端
-          const productInfo = {
-            product_id: product.value!.id,
-            quantity: quantity.value
-          }
-          
-          const paymentRes = await createAlipayPayment({
-            amount: totalPrice,
-            subject: `${product.value!.name} x${quantity.value}`,
-            description: JSON.stringify(productInfo),
-            related_id: product.value!.id,
-            related_type: 'product'
-          })
-
-          uni.hideLoading()
-
-          if (paymentRes.pay_url) {
-            const payUrl = encodeURIComponent(paymentRes.pay_url)
-            const returnUrl = encodeURIComponent('/pages/order/list')
-            
-            uni.navigateTo({
-              url: `/pages/payment/pay?payUrl=${payUrl}&outTradeNo=${paymentRes.out_trade_no}&amount=${totalPrice}&returnUrl=${returnUrl}`,
-              fail: () => {
-                // #ifdef H5
-                window.open(paymentRes.pay_url, '_blank')
-                uni.showToast({ title: '请在新窗口完成支付', icon: 'none', duration: 3000 })
-                // #endif
-              }
-            })
-          }
-        } catch (error) {
-          uni.hideLoading()
-          console.error('创建支付失败:', error)
-        } finally {
-          loading.value = false
-        }
-      }
-    }
+  // 跳转到结算页面
+  const productIcon = getProductIcon(product.value.category)
+  uni.navigateTo({
+    url: `/pages/order/checkout?productId=${product.value.id}&productName=${encodeURIComponent(product.value.name)}&productIcon=${encodeURIComponent(productIcon)}&quantity=${quantity.value}&amount=${totalPrice.toFixed(2)}`
   })
 }
 </script>

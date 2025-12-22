@@ -165,19 +165,6 @@ const loadHealthRecords = async (petId: number) => {
 }
 
 /**
- * 获取宠物emoji
- */
-const getPetEmoji = (species?: string): string => {
-  const emojis: Record<string, string> = {
-    '狗': '🐕',
-    '猫': '🐱',
-    '兔子': '🐰',
-    '仓鼠': '🐹'
-  }
-  return emojis[species || ''] || '🐾'
-}
-
-/**
  * 格式化日期
  */
 const formatDate = (dateStr?: string): string => {

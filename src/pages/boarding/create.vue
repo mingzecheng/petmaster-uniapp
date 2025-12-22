@@ -279,7 +279,7 @@ const canGoNext = computed(() => {
   if (currentStep.value === 1) {
     return selectedPetId.value !== null
   } else if (currentStep.value === 2) {
-    return selectedDate.value && endDate.value && days.value > 0
+    return startDate.value && endDate.value && days.value > 0
   }
   return false
 })

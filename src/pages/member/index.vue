@@ -27,11 +27,11 @@
             <view class="card-stats">
               <view class="stat-item">
                 <text class="stat-label">余额</text>
-                <text class="stat-value">¥{{ memberCard.balance }}</text>
+                <text class="stat-value">¥{{ (memberCard.balance || 0).toFixed(2) }}</text>
               </view>
               <view class="stat-item">
                 <text class="stat-label">累计充值</text>
-                <text class="stat-value">¥{{ memberCard.total_recharge }}</text>
+                <text class="stat-value">¥{{ (memberCard.total_recharge || 0).toFixed(2) }}</text>
               </view>
             </view>
           </view>
@@ -85,6 +85,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import { getMyMemberCard, getRechargeRecords, type MemberCard, type RechargeRecord } from '@/api/member'
 import { useUserStore } from '@/stores/user'
 
@@ -118,6 +119,13 @@ const goBack = () => {
  * 初始化
  */
 onMounted(() => {
+  loadMemberCard()
+})
+
+/**
+ * 页面显示时刷新数据
+ */
+onShow(() => {
   loadMemberCard()
 })
 

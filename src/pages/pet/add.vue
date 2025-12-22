@@ -129,8 +129,20 @@ import { ref, reactive } from 'vue'
 import { createPet, type PetCreate } from '@/api/pet'
 import { useUserStore } from '@/stores/user'
 
+/** 表单数据类型 */
+interface FormData {
+  name: string
+  species: string
+  breed?: string
+  gender?: string
+  age?: number
+  weight?: number
+  description?: string
+  owner_id: number
+}
+
 /** 表单数据 */
-const formData = reactive<PetCreate>({
+const formData = reactive<FormData>({
   name: '',
   species: '',
   breed: '',

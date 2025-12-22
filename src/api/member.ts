@@ -9,9 +9,11 @@ export interface MemberCard {
     id: number
     user_id: number
     card_number: string
-    balance: number
-    total_recharge: number
+    balance: string  // 后端返回字符串格式
+    total_recharge: string  // 后端返回字符串格式
+    total_consumption: string  // 累计消费
     status: 'active' | 'frozen' | 'cancelled'
+    activated_at?: string  // 激活时间
     created_at: string
     updated_at?: string
 }

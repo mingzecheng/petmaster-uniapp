@@ -192,18 +192,42 @@ const handlePay = async () => {
         }
       })
     } else if (res.pay_url) {
-      // 备选：使用页面支付
-      currentOutTradeNo.value = res.out_trade_no
-      
-      const payUrl = encodeURIComponent(res.pay_url)
-      const returnUrl = encodeURIComponent(`/pages/member/index`)
-      
-      uni.navigateTo({
-        url: `/pages/payment/pay?payUrl=${payUrl}&outTradeNo=${res.out_trade_no}&amount=${finalAmount.value}&returnUrl=${returnUrl}`,
-        fail: () => {
-          handlePayFallback(res.pay_url)
+      // 检查是否为Mock支付
+      if (res.pay_url.includes('/pages/payment/mock')) {
+        // Mock支付:提取out_trade_no并直接跳转到mock页面
+        try {
+          const url = new URL(res.pay_url)
+          const outTradeNo = url.searchParams.get('out_trade_no') || res.out_trade_no
+          
+          currentOutTradeNo.value = outTradeNo
+          uni.navigateTo({
+            url: `/pages/payment/mock?out_trade_no=${outTradeNo}`,
+            fail: (err) => {
+              console.error('跳转mock支付页面失败:', err)
+              uni.showToast({ title: '页面跳转失败', icon: 'none' })
+            }
+          })
+        } catch (error) {
+          // 如果URL解析失败,使用out_trade_no兜底
+          currentOutTradeNo.value = res.out_trade_no
+          uni.navigateTo({
+            url: `/pages/payment/mock?out_trade_no=${res.out_trade_no}`
+          })
         }
-      })
+      } else {
+        // 真实支付:备选使用页面支付
+        currentOutTradeNo.value = res.out_trade_no
+        
+        const payUrl = encodeURIComponent(res.pay_url)
+        const returnUrl = encodeURIComponent(`/pages/member/index`)
+        
+        uni.navigateTo({
+          url: `/pages/payment/pay?payUrl=${payUrl}&outTradeNo=${res.out_trade_no}&amount=${finalAmount.value}&returnUrl=${returnUrl}`,
+          fail: () => {
+            handlePayFallback(res.pay_url)
+          }
+        })
+      }
     } else {
       uni.showToast({ title: res.message || '创建支付失败', icon: 'none' })
     }

@@ -37,6 +37,8 @@ export interface PaymentStatusResponse {
     status: PaymentStatus
     is_paid?: boolean
     amount: string
+    subject?: string  // 新增
+    description?: string  // 新增
     created_at: string
     paid_at?: string
 }

@@ -15,7 +15,7 @@
       </view>
 
       <!-- 搜索框 -->
-      <view class="search-box glass">
+      <view class="search-box-enhanced glass">
         <text class="search-icon">🔍</text>
         <input
           type="text"
@@ -25,11 +25,11 @@
           class="search-input"
           @confirm="handleSearch"
         />
-        <view v-if="searchKeyword" class="clear-btn" @click="clearSearch">
+        <view v-if="searchKeyword" class="clear-btn-enhanced" @click="clearSearch">
           <text>✕</text>
         </view>
-        <view class="search-btn" @click="handleSearch">
-          <text>搜索</text>
+        <view class="voice-hint">
+          <text>🎤</text>
         </view>
       </view>
     </view>
@@ -122,7 +122,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getProducts, type Product } from '@/api/product'
-import { createAlipayPayment } from '@/api/payment'
 import { useUserStore } from '@/stores/user'
 
 /** 商品列表 */
@@ -242,51 +241,23 @@ const goToDetail = (id: number) => {
 }
 
 /**
- * 购买商品
+ * 购买商品 - 跳转到结算页
  */
-const handleBuy = async (product: Product) => {
+const handleBuy = (product: Product) => {
   if (!userStore.checkAuth()) return
+
+  if (product.stock <= 0) {
+    uni.showToast({ title: '商品已售罄', icon: 'none' })
+    return
+  }
 
   // 确保价格是数字类型
   const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price
+  const productIcon = getProductIcon(product.category)
 
-  uni.showModal({
-    title: '确认购买',
-    content: `确定要购买 ${product.name} 吗？价格：¥${price.toFixed(2)}`,
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          uni.showLoading({ title: '创建订单...' })
-          
-          const paymentRes = await createAlipayPayment({
-            amount: price,
-            subject: product.name,
-            description: `购买商品：${product.name}`,
-            related_id: product.id,
-            related_type: 'product'
-          })
-
-          uni.hideLoading()
-
-          if (paymentRes.pay_url) {
-            const payUrl = encodeURIComponent(paymentRes.pay_url)
-            const returnUrl = encodeURIComponent('/pages/product/list')
-            
-            uni.navigateTo({
-              url: `/pages/payment/pay?payUrl=${payUrl}&outTradeNo=${paymentRes.out_trade_no}&amount=${price}&returnUrl=${returnUrl}`,
-              fail: () => {
-                // #ifdef H5
-                window.open(paymentRes.pay_url, '_blank')
-                // #endif
-              }
-            })
-          }
-        } catch (error) {
-          uni.hideLoading()
-          console.error('创建支付失败:', error)
-        }
-      }
-    }
+  // 跳转到结算页面，支持积分抵扣
+  uni.navigateTo({
+    url: `/pages/order/checkout?productId=${product.id}&productName=${encodeURIComponent(product.name)}&productIcon=${encodeURIComponent(productIcon)}&quantity=1&amount=${price.toFixed(2)}`
   })
 }
 
@@ -414,18 +385,24 @@ const formatPrice = (price: number | string): [string, string] => {
 }
 
 /* 搜索框优化 */
-.search-box {
+.search-box-enhanced {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
-  height: 88rpx;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 28rpx;
-  padding: 0 28rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
-  transition: all 0.2s;
+  height: 92rpx;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 32rpx;
+  padding: 0 32rpx;
+  box-shadow: 0 10rpx 32rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(15px);
+  transition: all 0.3s;
+  border: 2rpx solid rgba(255, 215, 0, 0.2);
+
+  &:focus-within {
+    border-color: rgba(255, 179, 0, 0.5);
+    box-shadow: 0 12rpx 40rpx rgba(255, 179, 0, 0.15);
+  }
 
   &:active {
     transform: scale(0.99);
@@ -433,9 +410,9 @@ const formatPrice = (price: number | string): [string, string] => {
 }
 
 .search-icon {
-  font-size: 36rpx;
-  margin-right: 20rpx;
-  opacity: 0.8;
+  font-size: 38rpx;
+  margin-right: 24rpx;
+  opacity: 0.7;
 }
 
 .search-input {
@@ -445,78 +422,90 @@ const formatPrice = (price: number | string): [string, string] => {
   font-weight: 500;
 }
 
-.clear-btn {
-  width: 48rpx;
-  height: 48rpx;
+.clear-btn-enhanced {
+  width: 52rpx;
+  height: 52rpx;
   background: #F1F5F9;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16rpx;
+  transition: all 0.2s;
   
   text {
-    font-size: 24rpx;
-    color: #94A3B8;
+    font-size: 26rpx;
+    color: #64748B;
+    font-weight: 700;
+  }
+  
+  &:active {
+    transform: scale(0.9);
+    background: #E2E8F0;
   }
 }
 
-.search-btn {
-  padding-left: 20rpx;
-  border-left: 2rpx solid #E2E8F0;
+.voice-hint {
+  width: 52rpx;
+  height: 52rpx;
+  background: linear-gradient(135deg, #FFD700 0%, #FFB300 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(255, 179, 0, 0.25);
   
   text {
     font-size: 28rpx;
-    font-weight: 700;
-    color: #FF8F00;
   }
 }
 
-/* 分类筛选 */
+/* 分类筛选 - 更精致的胶囊设计 */
 .filter-scroll {
   white-space: nowrap;
-  padding-bottom: 8rpx;
-  margin-top: 12rpx;
+  background: #FFFFFF;
+  padding: 16rpx 0;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
 }
 
 .filter-tabs {
   display: inline-flex;
-  padding: 0 32rpx 24rpx;
-  gap: 20rpx;
+  padding: 0 24rpx;
+  gap: 16rpx;
 }
 
 .tab-item {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  padding: 16rpx 28rpx;
-  background: #FFFFFF;
-  border-radius: 32rpx;
-  min-width: 110rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.03);
-  border: 2rpx solid #F8FAFC;
+  gap: 8rpx;
+  padding: 16rpx 24rpx;
+  background: #F8FAFC;
+  border-radius: 100rpx;
+  border: 2rpx solid transparent;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   
   &.active {
     background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
-    border-color: #FFB300;
-    box-shadow: 0 10rpx 24rpx rgba(255, 160, 0, 0.25);
-    transform: translateY(-2rpx);
+    box-shadow: 0 6rpx 20rpx rgba(255, 160, 0, 0.3);
     
     .tab-label {
       color: #1F2937;
-      font-weight: 800;
+      font-weight: 700;
     }
+  }
+  
+  &:not(.active):active {
+    background: #EEF2F5;
   }
 }
 
 .tab-icon {
-  font-size: 36rpx;
-  margin-bottom: 8rpx;
+  font-size: 28rpx;
 }
 
 .tab-label {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #64748B;
   font-weight: 600;
   transition: all 0.25s;
@@ -532,41 +521,39 @@ const formatPrice = (price: number | string): [string, string] => {
 .products-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24rpx;
-  padding: 8rpx 8rpx 40rpx;
+  gap: 20rpx;
+  padding: 20rpx 8rpx 40rpx;
 }
 
-/* 独立的商城商品卡片样式 */
+/* 商城商品卡片 - 高级卡片设计 */
 .store-product-card {
   background: #FFFFFF;
-  border-radius: 40rpx;
+  border-radius: 28rpx;
   overflow: hidden;
-  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.04);
-  border: 1rpx solid rgba(0, 0, 0, 0.02);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: fadeInUp 0.5s ease-out forwards;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.4s ease-out forwards;
   opacity: 0;
   display: flex;
   flex-direction: column;
-  height: 100%; /* 确保在 grid 中高度统一 */
   
   &:active {
-    transform: scale(0.97);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+    transform: scale(0.98);
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
   }
 }
 
 .product-image-wrapper {
   position: relative;
-  width: 100%; /* 确保宽度充满 */
-  padding-bottom: 100%; /* 1:1 正方形 */
+  width: 100%;
+  padding-bottom: 85%; /* 略矮的比例更精致 */
   overflow: hidden;
   background: #F9FAFB;
   flex-shrink: 0;
 }
 
 .product-image-bg {
-  position: absolute; /* 绝对定位充满容器 */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -575,53 +562,48 @@ const formatPrice = (price: number | string): [string, string] => {
   align-items: center;
   justify-content: center;
   
-  &.bg-food { background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); }
-  &.bg-toy { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); }
-  &.bg-supply { background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); }
-  &.bg-wash { background: linear-gradient(135deg, #FAFAFA 0%, #F3F4F6 100%); }
-  &.bg-default { background: linear-gradient(135deg, #FAFAFA 0%, #F1F5F9 100%); }
+  &.bg-food { background: linear-gradient(150deg, #FFF7ED 0%, #FFEDD5 100%); }
+  &.bg-toy { background: linear-gradient(150deg, #ECFDF5 0%, #D1FAE5 100%); }
+  &.bg-supply { background: linear-gradient(150deg, #EFF6FF 0%, #DBEAFE 100%); }
+  &.bg-wash { background: linear-gradient(150deg, #F5F3FF 0%, #EDE9FE 100%); }
+  &.bg-default { background: linear-gradient(150deg, #F8FAFC 0%, #F1F5F9 100%); }
 }
 
 .product-emoji {
-  font-size: 96rpx;
-  filter: drop-shadow(0 12rpx 16rpx rgba(0,0,0,0.06));
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  
-  .store-product-card:active & {
-    transform: scale(1.15) rotate(5deg);
-  }
+  font-size: 88rpx;
+  filter: drop-shadow(0 8rpx 12rpx rgba(0,0,0,0.08));
 }
 
 .stock-badge {
   position: absolute;
-  top: 16rpx;
-  right: 16rpx;
+  top: 12rpx;
+  right: 12rpx;
   left: auto;
-  padding: 6rpx 16rpx;
+  padding: 6rpx 14rpx;
   border-radius: 100rpx;
   backdrop-filter: blur(8px);
   z-index: 10;
   
   text {
-    font-size: 20rpx;
+    font-size: 18rpx;
     font-weight: 700;
   }
   
   &.low {
-    background: rgba(255, 255, 255, 0.9);
-    border: 2rpx solid #F59E0B;
-    text { color: #D97706; }
+    background: rgba(255, 251, 235, 0.95);
+    border: 1rpx solid #FCD34D;
+    text { color: #B45309; }
   }
   
   &.out {
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.65);
     text { color: #FFFFFF; }
   }
 }
 
 .product-info {
-  padding: 24rpx;
-  flex: 1; /* 撑满剩余空间 */
+  padding: 20rpx;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -630,68 +612,67 @@ const formatPrice = (price: number | string): [string, string] => {
 .product-name {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2; /* 允许2行 */
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  font-size: 30rpx;
+  font-size: 26rpx;
   font-weight: 700;
   color: #1F2937;
-  margin-bottom: 24rpx;
-  line-height: 1.4;
+  margin-bottom: 16rpx;
+  line-height: 1.35;
 }
 
 .product-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: auto; /* 底部对齐 */
+  margin-top: auto;
 }
 
 .price-section {
   display: flex;
   align-items: baseline;
-  color: #E11D48;
+  color: #DC2626;
 }
 
 .price-label {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 700;
-  margin-right: 4rpx;
+  margin-right: 2rpx;
 }
 
 .price-value {
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: 800;
-  font-family: 'DIN Alternate', sans-serif;
+  font-family: 'DIN Alternate', -apple-system, sans-serif;
   letter-spacing: -1rpx;
 }
 
 .price-decimal {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 700;
 }
 
 .action-btn {
-  width: 68rpx;
-  height: 68rpx;
-  background: linear-gradient(135deg, #FFD700 0%, #FFB300 100%);
+  width: 60rpx;
+  height: 60rpx;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 20rpx rgba(255, 179, 0, 0.3);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 6rpx 16rpx rgba(255, 165, 0, 0.35);
+  transition: all 0.2s ease;
   
   &:active {
-    transform: scale(0.9) rotate(-10deg);
-    box-shadow: 0 4rpx 12rpx rgba(255, 179, 0, 0.2);
+    transform: scale(0.92);
+    box-shadow: 0 3rpx 8rpx rgba(255, 165, 0, 0.25);
   }
 }
 
 .cart-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
   color: #1F2937;
-  // 视觉修正：稍微上移一点让 emoji 居中
-  margin-bottom: 4rpx;
 }
 
 /* 加载状态 */

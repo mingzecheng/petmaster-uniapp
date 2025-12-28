@@ -5,26 +5,48 @@
       <view class="back-btn" @click="goBack">
         <text>‹</text>
       </view>
-      <text class="header-title">修改密码</text>
+      <text class="header-title">密码管理</text>
       <view class="header-placeholder"></view>
     </view>
 
     <view class="content-area">
       <!-- 表单卡片 -->
       <view class="form-card">
-        <!-- 原密码 -->
+        <!-- 邮箱地址 -->
         <view class="form-item">
-          <text class="form-label">原密码</text>
+          <text class="form-label">邮箱地址</text>
           <view class="input-group">
-            <view class="input-icon">🔒</view>
+            <view class="input-icon">📧</view>
             <input 
-              :type="showOldPassword ? 'text' : 'password'"
-              v-model="form.oldPassword"
-              placeholder="请输入原密码"
+              type="text"
+              v-model="form.email"
+              placeholder="请输入邮箱地址"
+              class="input-field"
+              @blur="validateEmailField"
+              @input="clearEmailError"
+            />
+          </view>
+          <text v-if="emailError" class="error-text">{{ emailError }}</text>
+        </view>
+
+        <!-- 邮箱验证码 -->
+        <view class="form-item">
+          <text class="form-label">邮箱验证码</text>
+          <view class="input-group">
+            <view class="input-icon">🔢</view>
+            <input 
+              type="text"
+              v-model="form.code"
+              placeholder="请输入6位验证码"
+              maxlength="6"
               class="input-field"
             />
-            <view class="eye-btn" @click="showOldPassword = !showOldPassword">
-              <text>{{ showOldPassword ? '👀' : '🙈' }}</text>
+            <view 
+              class="code-btn"
+              :class="{ disabled: !isEmailValid || codeSending || countdown > 0 }"
+              @click="sendCode"
+            >
+              <text class="code-text">{{ codeButtonText }}</text>
             </view>
           </view>
         </view>
@@ -66,11 +88,13 @@
 
       <!-- 提示信息 -->
       <view class="tips-card">
-        <text class="tips-title">密码要求</text>
+        <text class="tips-title">密码设置要求</text>
         <view class="tips-list">
           <text class="tips-item">• 密码长度至少 6 位</text>
-          <text class="tips-item">• 建议使用字母、数字组合</text>
-          <text class="tips-item">• 修改后需重新登录</text>
+          <text class="tips-item">• 必须包含字母和数字</text>
+          <text class="tips-item">• 支持特殊字符 @$!%*#?&</text>
+          <text class="tips-item">• 需要邮箱验证码验证</text>
+          <text class="tips-item">• 设置成功后需重新登录</text>
         </view>
       </view>
     </view>
@@ -78,7 +102,7 @@
     <!-- 底部按钮 -->
     <view class="bottom-bar glass">
       <button class="submit-btn" :loading="loading" @click="handleSubmit">
-        确认修改
+        确认设置
       </button>
     </view>
   </view>
@@ -86,35 +110,158 @@
 
 <script setup lang="ts">
 /**
- * @description 修改密码页面
+ * @description 密码管理页面（通过邮箱验证码设置/修改密码）
  */
 
-import { ref } from 'vue'
-import { changePassword } from '@/api/user'
+import { ref, computed, onMounted } from 'vue'
+import { setPassword } from '@/api/user'
+import { sendEmailCode } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 
 /** 用户Store */
 const userStore = useUserStore()
 
+/** 用户信息 */
+const userInfo = computed(() => userStore.userInfo)
+
+/** 页面标题 */
+const pageTitle = computed(() => '设置/修改密码')
+
 /** 表单数据 */
 const form = ref({
-  oldPassword: '',
+  email: '',
+  code: '',
   newPassword: '',
   confirmPassword: ''
 })
 
+/** 邮箱错误信息 */
+const emailError = ref('')
+
+/** 验证码发送状态 */
+const codeSending = ref(false)
+
+/** 倒计时秒数 */
+const countdown = ref(0)
+
+/** 倒计时定时器 */
+let countdownTimer: number | null = null
+
 /** 密码显示状态 */
-const showOldPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
 /** 加载状态 */
 const loading = ref(false)
 
+/** 邮箱验证正则 */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** 密码强度正则：至少6位，必须包含字母和数字 */
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/
+
+/** 邮箱是否有效 */
+const isEmailValid = computed(() => {
+  return EMAIL_REGEX.test(form.value.email)
+})
+
+/** 验证码按钮文本 */
+const codeButtonText = computed(() => {
+  if (countdown.value > 0) {
+    return `${countdown.value}s`
+  }
+  if (codeSending.value) {
+    return '发送中...'
+  }
+  return '获取验证码'
+})
+
+/**
+ * 初始化
+ */
+onMounted(() => {
+  // 预填邮箱
+  if (userInfo.value?.email) {
+    form.value.email = userInfo.value.email
+  }
+})
+
+/**
+ * 验证邮箱字段
+ */
+const validateEmailField = () => {
+  if (form.value.email && !isEmailValid.value) {
+    emailError.value = '请输入有效的邮箱地址'
+  }
+}
+
+/**
+ * 清除邮箱错误
+ */
+const clearEmailError = () => {
+  emailError.value = ''
+}
+
+/**
+ * 发送验证码
+ */
+const sendCode = async () => {
+  // 验证邮箱
+  if (!form.value.email) {
+    uni.showToast({ title: '请输入邮箱地址', icon: 'none' })
+    return
+  }
+  
+  if (!isEmailValid.value) {
+    uni.showToast({ title: '请输入有效的邮箱地址', icon: 'none' })
+    return
+  }
+  
+  // 检查是否在倒计时中
+  if (countdown.value > 0 || codeSending.value) {
+    return
+  }
+  
+  codeSending.value = true
+  try {
+    // 调用发送验证码API（使用login场景，因为用户已登录，邮箱肯定存在）
+    await sendEmailCode({
+      email: form.value.email,
+      scene: 'login'
+    })
+    
+    uni.showToast({ title: '验证码已发送', icon: 'success' })
+    
+    // 开始倒计时
+    countdown.value = 60
+    countdownTimer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        if (countdownTimer) {
+          clearInterval(countdownTimer)
+          countdownTimer = null
+        }
+      }
+    }, 1000) as unknown as number
+  } catch (error: any) {
+    uni.showToast({ 
+      title: error?.message || '发送验证码失败', 
+      icon: 'none' 
+    })
+  } finally {
+    codeSending.value = false
+  }
+}
+
 /**
  * 返回
  */
 const goBack = () => {
+  // 清除定时器
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
   uni.navigateBack()
 }
 
@@ -122,12 +269,29 @@ const goBack = () => {
  * 提交修改
  */
 const handleSubmit = async () => {
-  // 表单验证
-  if (!form.value.oldPassword) {
-    uni.showToast({ title: '请输入原密码', icon: 'none' })
+  // 验证邮箱
+  if (!form.value.email) {
+    uni.showToast({ title: '请输入邮箱地址', icon: 'none' })
     return
   }
   
+  if (!isEmailValid.value) {
+    uni.showToast({ title: '请输入有效的邮箱地址', icon: 'none' })
+    return
+  }
+  
+  // 验证验证码
+  if (!form.value.code) {
+    uni.showToast({ title: '请输入验证码', icon: 'none' })
+    return
+  }
+  
+  if (form.value.code.length !== 6) {
+    uni.showToast({ title: '验证码为6位数字', icon: 'none' })
+    return
+  }
+  
+  // 验证新密码
   if (!form.value.newPassword) {
     uni.showToast({ title: '请输入新密码', icon: 'none' })
     return
@@ -138,6 +302,17 @@ const handleSubmit = async () => {
     return
   }
   
+  // 验证密码强度
+  if (!PASSWORD_REGEX.test(form.value.newPassword)) {
+    uni.showToast({ 
+      title: '密码必须包含字母和数字', 
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
+  
+  // 验证确认密码
   if (form.value.newPassword !== form.value.confirmPassword) {
     uni.showToast({ title: '两次密码输入不一致', icon: 'none' })
     return
@@ -145,13 +320,15 @@ const handleSubmit = async () => {
   
   loading.value = true
   try {
-    await changePassword({
-      old_password: form.value.oldPassword,
+    // 设置/修改密码（统一使用setPassword API，只需邮箱验证码）
+    await setPassword({
+      email: form.value.email,
+      code: form.value.code,
       new_password: form.value.newPassword
     })
     
     uni.showModal({
-      title: '密码修改成功',
+      title: '密码设置成功',
       content: '为了您的账户安全，请重新登录',
       showCancel: false,
       success: () => {
@@ -162,7 +339,7 @@ const handleSubmit = async () => {
       }
     })
   } catch (error: any) {
-    const msg = error?.message || '修改失败'
+    const msg = error?.message || '设置失败'
     uni.showToast({ title: msg, icon: 'none' })
   } finally {
     loading.value = false
@@ -288,6 +465,43 @@ const handleSubmit = async () => {
   
   text {
     font-size: 28rpx;
+  }
+}
+
+.error-text {
+  display: block;
+  font-size: 22rpx;
+  color: #EF4444;
+  margin-top: 8rpx;
+  padding-left: 12rpx;
+}
+
+/* 验证码按钮 */
+.code-btn {
+  padding: 16rpx 24rpx;
+  margin-right: -12rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
+  transition: all 0.2s;
+  
+  .code-text {
+    font-size: 26rpx;
+    font-weight: 600;
+    color: #1F2937;
+    white-space: nowrap;
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &.disabled {
+    background: #E5E7EB;
+    opacity: 0.6;
+    
+    .code-text {
+      color: #9CA3AF;
+    }
   }
 }
 

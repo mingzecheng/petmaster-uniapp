@@ -43,6 +43,13 @@ export interface RegisterForm {
     password: string
     mobile?: string
     email?: string
+    recaptcha_token?: string
+}
+
+/** 邮箱登录表单 */
+export interface EmailLoginForm {
+    email: string
+    code: string
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -100,6 +107,52 @@ export const useUserStore = defineStore('user', () => {
     }
 
     /**
+     * 邮箱验证码登录
+     * @param form - 邮箱登录表单
+     */
+    const emailLogin = async (form: EmailLoginForm): Promise<boolean> => {
+        try {
+            const res = await post<{ access_token: string; token_type: string }>('/auth/email/login', form)
+
+            if (res.access_token) {
+                token.value = res.access_token
+                setToken(res.access_token)
+
+                // 获取用户信息
+                await fetchUserInfo()
+                return true
+            }
+            return false
+        } catch (error) {
+            console.error('邮箱登录失败:', error)
+            return false
+        }
+    }
+
+    /**
+     * 邮箱验证码注册（注册后自动登录）
+     * @param form - 邮箱注册表单
+     */
+    const emailRegister = async (form: EmailLoginForm): Promise<boolean> => {
+        try {
+            const res = await post<{ access_token: string; token_type: string }>('/auth/email/register', form)
+
+            if (res.access_token) {
+                token.value = res.access_token
+                setToken(res.access_token)
+
+                // 获取用户信息
+                await fetchUserInfo()
+                return true
+            }
+            return false
+        } catch (error) {
+            console.error('邮箱注册失败:', error)
+            return false
+        }
+    }
+
+    /**
      * 获取用户信息
      */
     const fetchUserInfo = async (): Promise<void> => {
@@ -141,6 +194,8 @@ export const useUserStore = defineStore('user', () => {
         points,
         login,
         register,
+        emailLogin,
+        emailRegister,
         fetchUserInfo,
         logout,
         checkAuth

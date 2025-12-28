@@ -205,11 +205,16 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     formData.owner_id = userStore.userInfo.id
-    await createPet({
-      ...formData,
-      age: formData.age ? Number(formData.age) : undefined,
-      weight: formData.weight ? Number(formData.weight) : undefined
-    })
+    // 构建符合 PetCreate 类型的数据（不包含 age 字段）
+    const petData: PetCreate = {
+      name: formData.name,
+      species: formData.species,
+      breed: formData.breed || undefined,
+      gender: formData.gender || undefined,
+      weight: formData.weight ? Number(formData.weight) : undefined,
+      owner_id: formData.owner_id
+    }
+    await createPet(petData)
 
     uni.showToast({ title: '添加成功', icon: 'success' })
     

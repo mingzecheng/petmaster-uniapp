@@ -42,23 +42,23 @@ export interface PointRecord {
     created_at: string
 }
 
-/** 交易记录 */
-export interface Transaction {
+/** 支付记录 */
+export interface Payment {
     id: number
     user_id: number
-    type: string
-    amount: number
-    points?: number
+    out_trade_no: string
+    trade_no?: string
+    amount: string
+    status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded'
+    method: 'alipay' | 'wechat' | 'card' | 'cash'
+    subject: string
     description?: string
     related_id?: number
     related_type?: string
     created_at: string
+    paid_at?: string
 }
 
-/**
- * 获取我的会员卡
- * @param userId - 用户ID
- */
 /**
  * 获取我的会员卡
  * @param userId - 用户ID
@@ -94,22 +94,17 @@ export const queryRechargePaymentStatus = (cardId: number, outTradeNo: string) =
 }
 
 /**
- * 获取我的交易记录
+ * 获取我的支付记录
+ * @param params - 分页参数
  */
-export const getMyTransactions = (params?: { skip?: number; limit?: number }) => {
-    return get<Transaction[]>('/transactions/me', params)
+export const getMyPayments = (params?: { skip?: number; limit?: number }) => {
+    return get<Payment[]>('/payments/', params)
 }
 
 /**
- * 获取我的积分
+ * 获取我的积分统计
  */
-export const getMyPoints = () => {
-    return get<{ user_id: number; total_points: number }>('/transactions/me/points')
+export const getMyPointStats = () => {
+    return get<{ current_points: number; total_earned: number; total_used: number }>('/points/me/stats')
 }
 
-/**
- * 获取我的消费总额
- */
-export const getMySpending = () => {
-    return get<{ user_id: number; total_spending: number }>('/transactions/me/spending')
-}

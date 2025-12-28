@@ -27,11 +27,11 @@
             <view class="card-stats">
               <view class="stat-item">
                 <text class="stat-label">余额</text>
-                <text class="stat-value">¥{{ (memberCard.balance || 0).toFixed(2) }}</text>
+                <text class="stat-value">¥{{ Number(memberCard.balance || 0).toFixed(2) }}</text>
               </view>
               <view class="stat-item">
                 <text class="stat-label">累计充值</text>
-                <text class="stat-value">¥{{ (memberCard.total_recharge || 0).toFixed(2) }}</text>
+                <text class="stat-value">¥{{ Number(memberCard.total_recharge || 0).toFixed(2) }}</text>
               </view>
             </view>
           </view>

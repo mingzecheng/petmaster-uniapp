@@ -20,64 +20,151 @@
       <view class="form-card">
         <text class="form-title">{{ isRegister ? '创建账号' : '欢迎回来' }}</text>
         
-        <!-- 用户名输入 -->
-        <view class="input-group" :class="{ 'focused': focusedField === 'username' }">
-          <view class="input-icon-box">
-            <text class="input-icon">👤</text>
+        <!-- 登录方式切换 -->
+        <view class="login-type-tabs">
+          <view 
+            class="tab-item" 
+            :class="{ active: loginType === 'password' }"
+            @click="switchLoginType('password')"
+          >
+            <text class="tab-icon">🔑</text>
+            <text class="tab-text">账号密码</text>
           </view>
-          <input
-            type="text"
-            v-model="formData.username"
-            placeholder="账号 / 手机号"
-            placeholder-class="input-placeholder"
-            class="input-field"
-            @focus="focusedField = 'username'"
-            @blur="focusedField = ''"
-          />
+          <view 
+            class="tab-item" 
+            :class="{ active: loginType === 'email' }"
+            @click="switchLoginType('email')"
+          >
+            <text class="tab-icon">📧</text>
+            <text class="tab-text">邮箱验证</text>
+          </view>
+        </view>
+        
+        <!-- 账号密码登录方式 -->
+        <template v-if="loginType === 'password'">
+        <!-- 用户名输入 -->
+        <view class="input-wrapper">
+          <view class="input-group" :class="{ 'focused': focusedField === 'username', 'error': errors.username }">
+            <view class="input-icon-box">
+              <text class="input-icon">👤</text>
+            </view>
+            <input
+              type="text"
+              v-model="formData.username"
+              placeholder="用户名"
+              placeholder-class="input-placeholder"
+              class="input-field"
+              @focus="focusedField = 'username'"
+              @blur="validateField('username')"
+              @input="clearError('username')"
+            />
+          </view>
+          <text v-if="errors.username" class="error-text">{{ errors.username }}</text>
         </view>
 
         <!-- 密码输入 -->
-        <view class="input-group" :class="{ 'focused': focusedField === 'password' }">
-          <view class="input-icon-box">
-            <text class="input-icon">🔒</text>
+        <view class="input-wrapper">
+          <view class="input-group" :class="{ 'focused': focusedField === 'password', 'error': errors.password }">
+            <view class="input-icon-box">
+              <text class="input-icon">🔒</text>
+            </view>
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              v-model="formData.password"
+              placeholder="密码"
+              placeholder-class="input-placeholder"
+              class="input-field"
+              @focus="focusedField = 'password'"
+              @blur="validateField('password')"
+              @input="clearError('password')"
+            />
+            <view class="eye-btn" @click="togglePassword">
+              <text class="eye-icon" :class="{ active: showPassword }">{{ showPassword ? '👀' : '🙈' }}</text>
+            </view>
           </view>
-          <input
-            :type="showPassword ? 'text' : 'password'"
-            v-model="formData.password"
-            placeholder="密码"
-            placeholder-class="input-placeholder"
-            class="input-field"
-            @focus="focusedField = 'password'"
-            @blur="focusedField = ''"
-          />
-          <view class="eye-btn" @click="togglePassword">
-            <text class="eye-icon" :class="{ active: showPassword }">{{ showPassword ? '👀' : '🙈' }}</text>
-          </view>
+          <text v-if="errors.password" class="error-text">{{ errors.password }}</text>
         </view>
 
         <!-- 注册模式额外字段 -->
         <template v-if="isRegister">
-          <view class="input-group" :class="{ 'focused': focusedField === 'mobile' }">
-            <view class="input-icon-box">
-              <text class="input-icon">📱</text>
+          <view class="input-wrapper">
+            <view class="input-group" :class="{ 'focused': focusedField === 'mobile', 'error': errors.mobile }">
+              <view class="input-icon-box">
+                <text class="input-icon">📱</text>
+              </view>
+              <input
+                type="number"
+                v-model="formData.mobile"
+                placeholder="手机号"
+                placeholder-class="input-placeholder"
+                class="input-field"
+                maxlength="11"
+                @focus="focusedField = 'mobile'"
+                @blur="validateField('mobile')"
+                @input="clearError('mobile')"
+              />
             </view>
-            <input
-              type="number"
-              v-model="formData.mobile"
-              placeholder="手机号（选填）"
-              placeholder-class="input-placeholder"
-              class="input-field"
-              maxlength="11"
-              @focus="focusedField = 'mobile'"
-              @blur="focusedField = ''"
-            />
+            <text v-if="errors.mobile" class="error-text">{{ errors.mobile }}</text>
           </view>
         </template>
 
+        </template>
+        
+        <!-- 邮箱验证码登录方式 -->
+        <template v-else-if="loginType === 'email'">
+          <!-- 邮箱输入 -->
+          <view class="input-wrapper">
+            <view class="input-group" :class="{ 'focused': focusedField === 'email', 'error': errors.email }">
+              <view class="input-icon-box">
+                <text class="input-icon">📧</text>
+              </view>
+              <input
+                type="text"
+                v-model="emailFormData.email"
+                placeholder="邮箱地址"
+                placeholder-class="input-placeholder"
+                class="input-field"
+                @focus="focusedField = 'email'"
+                @blur="validateEmailField('email')"
+                @input="clearEmailError('email')"
+              />
+            </view>
+            <text v-if="errors.email" class="error-text">{{ errors.email }}</text>
+          </view>
+
+          <!-- 验证码输入 -->
+          <view class="input-wrapper">
+            <view class="input-group" :class="{ 'focused': focusedField === 'code', 'error': errors.code }">
+              <view class="input-icon-box">
+                <text class="input-icon">🔢</text>
+              </view>
+              <input
+                type="number"
+                v-model="emailFormData.code"
+                placeholder="验证码"
+                placeholder-class="input-placeholder"
+                class="input-field"
+                maxlength="6"
+                @focus="focusedField = 'code'"
+                @blur="validateEmailField('code')"
+                @input="clearEmailError('code')"
+              />
+              <view 
+                class="code-btn" 
+                :class="{ disabled: codeSending || countdown > 0 || !isEmailValid }"
+                @click="sendCode"
+              >
+                <text class="code-text">{{ codeButtonText }}</text>
+              </view>
+            </view>
+            <text v-if="errors.code" class="error-text">{{ errors.code }}</text>
+          </view>
+        </template>
+        
         <!-- 提交按钮 -->
         <button 
           class="submit-btn" 
-          :class="{ disabled: !formData.username || !formData.password }"
+          :class="{ disabled: !isFormValid }"
           :loading="loading" 
           @click="handleSubmit"
         >
@@ -113,8 +200,9 @@
  * 支持登录/注册模式切换，H5 平台集成 Google reCAPTCHA v2/v3 验证
  */
 
-import { ref, reactive, watch, nextTick, onMounted } from 'vue'
+import { ref, reactive, watch, nextTick, onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { sendEmailCode } from '@/api/auth'
 
 // #ifdef H5
 import { useRecaptcha } from '@/composables/useRecaptcha'
@@ -125,6 +213,15 @@ const formData = reactive({
   username: '',
   password: '',
   mobile: ''
+})
+
+/** 表单错误信息 */
+const errors = reactive({
+  username: '',
+  password: '',
+  mobile: '',
+  email: '',
+  code: ''
 })
 
 /** 是否显示密码 */
@@ -141,6 +238,24 @@ const focusedField = ref('')
 
 /** 用户Store */
 const userStore = useUserStore()
+
+/** 登录方式：password=账号密码, email=邮箱验证码 */
+const loginType = ref<'password' | 'email'>('password')
+
+/** 邮箱表单数据 */
+const emailFormData = reactive({
+  email: '',
+  code: ''
+})
+
+/** 验证码发送状态 */
+const codeSending = ref(false)
+
+/** 验证码倒计时 */
+const countdown = ref(0)
+
+/** 倒计时定时器 */
+let countdownTimer: number | null = null
 
 // #ifdef H5
 /** reCAPTCHA 相关 */
@@ -196,45 +311,297 @@ const togglePassword = () => {
  */
 const toggleMode = () => {
   isRegister.value = !isRegister.value
+  // 清空所有表单
   formData.username = ''
   formData.password = ''
   formData.mobile = ''
+  emailFormData.email = ''
+  emailFormData.code = ''
+  // 清除所有错误
+  errors.username = ''
+  errors.password = ''
+  errors.mobile = ''
+  errors.email = ''
+  errors.code = ''
+  // 停止倒计时
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  countdown.value = 0
+}
+
+/** 正则表达式 */
+const REGEX = {
+  /** 用户名：字母开头，3-20位字母、数字、下划线 */
+  username: /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/,
+  /** 密码：6-20位，必须包含字母和数字 */
+  password: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,20}$/,
+  /** 手机号：11位中国大陆手机号 */
+  mobile: /^1[3-9]\d{9}$/,
+  /** 邮箱 */
+  email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+}
+
+/**
+ * 切换登录方式
+ */
+const switchLoginType = (type: 'password' | 'email') => {
+  if (loginType.value === type) return
+  loginType.value = type
+  // 清空所有表单
+  formData.username = ''
+  formData.password = ''
+  formData.mobile = ''
+  emailFormData.email = ''
+  emailFormData.code = ''
+  // 清除所有错误
+  errors.username = ''
+  errors.password = ''
+  errors.mobile = ''
+  errors.email = ''
+  errors.code = ''
+  // 停止倒计时
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  countdown.value = 0
+}
+
+/**
+ * 邮箱是否有效（用于验证码按钮禁用判断）
+ */
+const isEmailValid = computed(() => {
+  return REGEX.email.test(emailFormData.email)
+})
+
+/**
+ * 验证码按钮文本
+ */
+const codeButtonText = computed(() => {
+  if (countdown.value > 0) {
+    return `${countdown.value}s`
+  }
+  return '获取验证码'
+})
+
+/**
+ * 表单是否有效（用于提交按钮禁用判断）
+ */
+const isFormValid = computed(() => {
+  if (loginType.value === 'password') {
+    return formData.username && formData.password
+  } else {
+    return emailFormData.email && emailFormData.code
+  }
+})
+
+/**
+ * 清除指定字段的错误
+ */
+const clearError = (field: 'username' | 'password' | 'mobile') => {
+  errors[field] = ''
+  focusedField.value = field
+}
+
+/**
+ * 清除邮箱字段的错误
+ */
+const clearEmailError = (field: 'email' | 'code') => {
+  errors[field] = ''
+  focusedField.value = field
+}
+
+/**
+ * 验证邮箱字段（失焦时触发）
+ */
+const validateEmailField = (field: 'email' | 'code') => {
+  focusedField.value = ''
+  
+  switch (field) {
+    case 'email':
+      if (!emailFormData.email.trim()) {
+        errors.email = '请输入邮箱地址'
+      } else if (!REGEX.email.test(emailFormData.email)) {
+        errors.email = '请输入有效的邮箱地址'
+      } else {
+        errors.email = ''
+      }
+      break
+    case 'code':
+      if (!emailFormData.code.trim()) {
+        errors.code = '请输入验证码'
+      } else if (emailFormData.code.length !== 6) {
+        errors.code = '验证码为6位数字'
+      } else {
+        errors.code = ''
+      }
+      break
+  }
+}
+
+/**
+ * 验证单个字段（失焦时触发）
+ */
+const validateField = (field: 'username' | 'password' | 'mobile') => {
+  focusedField.value = ''
+  
+  switch (field) {
+    case 'username':
+      if (!formData.username.trim()) {
+        errors.username = '请输入用户名'
+      } else if (!REGEX.username.test(formData.username)) {
+        errors.username = '需字母开头，3-20位字母数字下划线'
+      } else {
+        errors.username = ''
+      }
+      break
+    case 'password':
+      if (!formData.password) {
+        errors.password = '请输入密码'
+      } else if (!REGEX.password.test(formData.password)) {
+        errors.password = '需6-20位，包含字母和数字'
+      } else {
+        errors.password = ''
+      }
+      break
+    case 'mobile':
+      if (isRegister.value) {
+        if (!formData.mobile.trim()) {
+          errors.mobile = '请输入手机号'
+        } else if (!REGEX.mobile.test(formData.mobile)) {
+          errors.mobile = '请输入正确的11位手机号'
+        } else {
+          errors.mobile = ''
+        }
+      }
+      break
+  }
 }
 
 /**
  * 表单验证
  */
 const validateForm = (): boolean => {
+  // 用户名验证
   if (!formData.username.trim()) {
     uni.showToast({ title: '请输入用户名', icon: 'none' })
     return false
   }
-  if (formData.username.length < 3) {
-    uni.showToast({ title: '用户名至少3个字符', icon: 'none' })
+  if (!REGEX.username.test(formData.username)) {
+    uni.showToast({ title: '用户名需字母开头，3-20位字母数字下划线', icon: 'none' })
     return false
   }
+
+  // 密码验证
   if (!formData.password) {
     uni.showToast({ title: '请输入密码', icon: 'none' })
     return false
   }
-  if (formData.password.length < 6) {
-    uni.showToast({ title: '密码至少6位', icon: 'none' })
+  if (!REGEX.password.test(formData.password)) {
+    uni.showToast({ title: '密码需6-20位，包含字母和数字', icon: 'none' })
     return false
   }
+
+  // 注册模式：手机号必填
+  if (isRegister.value) {
+    if (!formData.mobile.trim()) {
+      uni.showToast({ title: '请输入手机号', icon: 'none' })
+      return false
+    }
+    if (!REGEX.mobile.test(formData.mobile)) {
+      uni.showToast({ title: '请输入正确的11位手机号', icon: 'none' })
+      return false
+    }
+  }
+
   return true
+}
+
+/**
+ * 发送邮箱验证码
+ */
+const sendCode = async () => {
+  // 验证邮箱格式
+  if (!emailFormData.email.trim()) {
+    uni.showToast({ title: '请输入邮箱地址', icon: 'none' })
+    return
+  }
+  if (!REGEX.email.test(emailFormData.email)) {
+    uni.showToast({ title: '请输入有效的邮箱地址', icon: 'none' })
+    return
+  }
+  
+  // 防止重复发送
+  if (codeSending.value || countdown.value > 0) {
+    return
+  }
+  
+  codeSending.value = true
+  try {
+    const scene = isRegister.value ? 'register' : 'login'
+    const res = await sendEmailCode({
+      email: emailFormData.email,
+      scene
+    })
+    
+    if (res.success) {
+      uni.showToast({ title: res.message, icon: 'success' })
+      // 开始倒计时
+      countdown.value = 60
+      countdownTimer = setInterval(() => {
+        countdown.value--
+        if (countdown.value <= 0) {
+          if (countdownTimer) {
+            clearInterval(countdownTimer)
+            countdownTimer = null
+          }
+        }
+      }, 1000) as unknown as number
+    } else {
+      uni.showToast({ title: res.message, icon: 'none' })
+    }
+  } catch (error: any) {
+    console.error('发送验证码失败:', error)
+    uni.showToast({ title: error.message || '发送失败，请稍后重试', icon: 'none' })
+  } finally {
+    codeSending.value = false
+  }
 }
 
 /**
  * 提交表单
  */
 const handleSubmit = async () => {
-  if (!validateForm()) return
+  // 账号密码方式需要验证表单
+  if (loginType.value === 'password' && !validateForm()) return
+  
+  // 邮箱方式需要验证邮箱和验证码
+  if (loginType.value === 'email') {
+    if (!emailFormData.email.trim()) {
+      uni.showToast({ title: '请输入邮箱地址', icon: 'none' })
+      return
+    }
+    if (!REGEX.email.test(emailFormData.email)) {
+      uni.showToast({ title: '请输入有效的邮箱地址', icon: 'none' })
+      return
+    }
+    if (!emailFormData.code.trim()) {
+      uni.showToast({ title: '请输入验证码', icon: 'none' })
+      return
+    }
+    if (emailFormData.code.length !== 6) {
+      uni.showToast({ title: '验证码为6位数字', icon: 'none' })
+      return
+    }
+  }
 
   // #ifdef H5
-  // v2 特殊处理：如果未验证，显示弹窗
-  if (recaptchaVersion === 'v2' && !isRegister.value) {
+  // v2 验证：登录和注册都需要验证（仅账号密码方式）
+  if (loginType.value === 'password' && recaptchaVersion === 'v2') {
     try {
-      await executeRecaptcha('login')
+      await executeRecaptcha(isRegister.value ? 'register' : 'login')
     } catch (_error) {
       showRecaptchaModal.value = true
       return
@@ -244,25 +611,40 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    if (isRegister.value) {
-      // 注册
-      const success = await userStore.register({
-        username: formData.username,
-        password: formData.password,
-        mobile: formData.mobile || undefined
-      })
-      if (success) {
-        isRegister.value = false
-        formData.password = ''
-        uni.showToast({ title: '注册成功，请登录', icon: 'success' })
+    // 邮箱验证码登录/注册
+    if (loginType.value === 'email') {
+      if (isRegister.value) {
+        // 邮箱验证码注册（注册后自动登录）
+        const success = await userStore.emailRegister({
+          email: emailFormData.email,
+          code: emailFormData.code
+        })
+        if (success) {
+          uni.showToast({ title: '注册成功', icon: 'success' })
+          setTimeout(() => {
+            uni.switchTab({ url: '/pages/index/index' })
+          }, 1000)
+        }
+      } else {
+        // 邮箱验证码登录
+        const success = await userStore.emailLogin({
+          email: emailFormData.email,
+          code: emailFormData.code
+        })
+        if (success) {
+          uni.showToast({ title: '登录成功', icon: 'success' })
+          setTimeout(() => {
+            uni.switchTab({ url: '/pages/index/index' })
+          }, 1000)
+        }
       }
-    } else {
-      // 登录
-      let recaptchaToken: string | undefined
-
+    } 
+    // 账号密码登录/注册
+    else {
       // #ifdef H5
+      let recaptchaToken: string | undefined
       try {
-        recaptchaToken = await executeRecaptcha('login')
+        recaptchaToken = await executeRecaptcha(isRegister.value ? 'register' : 'login')
       } catch (error: any) {
         console.error('reCAPTCHA error:', error)
         uni.showToast({ title: error.message || '验证码验证失败', icon: 'none' })
@@ -271,22 +653,43 @@ const handleSubmit = async () => {
       }
       // #endif
 
-      const success = await userStore.login({
-        username: formData.username,
-        password: formData.password,
-        recaptcha_token: recaptchaToken
-      })
-      if (success) {
-        uni.showToast({ title: '登录成功', icon: 'success' })
-        setTimeout(() => {
-          uni.switchTab({ url: '/pages/index/index' })
-        }, 1000)
+      if (isRegister.value) {
+        // 账号密码注册
+        const success = await userStore.register({
+          username: formData.username,
+          password: formData.password,
+          mobile: formData.mobile || undefined,
+          // #ifdef H5
+          recaptcha_token: recaptchaToken
+          // #endif
+        })
+        if (success) {
+          isRegister.value = false
+          formData.password = ''
+          uni.showToast({ title: '注册成功，请登录', icon: 'success' })
+        }
+      } else {
+        // 账号密码登录
+        const success = await userStore.login({
+          username: formData.username,
+          password: formData.password,
+          // #ifdef H5
+          recaptcha_token: recaptchaToken
+          // #endif
+        })
+        if (success) {
+          uni.showToast({ title: '登录成功', icon: 'success' })
+          setTimeout(() => {
+            uni.switchTab({ url: '/pages/index/index' })
+          }, 1000)
+        }
       }
     }
   } finally {
     loading.value = false
   }
 }
+
 </script>
 
 <style lang="scss">
@@ -399,8 +802,65 @@ const handleSubmit = async () => {
   font-size: 40rpx;
   font-weight: 800;
   color: #1F2937;
-  margin-bottom: 48rpx;
+  margin-bottom: 32rpx;
   padding-left: 8rpx;
+}
+
+/* 登录方式切换标签 */
+.login-type-tabs {
+  display: flex;
+  background: #F3F4F6;
+  border-radius: 20rpx;
+  padding: 6rpx;
+  margin-bottom: 36rpx;
+  
+  .tab-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12rpx;
+    height: 72rpx;
+    border-radius: 16rpx;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    
+    .tab-icon {
+      font-size: 32rpx;
+      opacity: 0.5;
+      transition: all 0.3s;
+    }
+    
+    .tab-text {
+      font-size: 28rpx;
+      font-weight: 600;
+      color: #6B7280;
+      transition: all 0.3s;
+    }
+    
+    &.active {
+      background: #FFFFFF;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+      
+      .tab-icon {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+      
+      .tab-text {
+        color: #FF8F00;
+      }
+    }
+    
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+/* 输入框包裹容器 */
+.input-wrapper {
+  margin-bottom: 24rpx;
 }
 
 /* 输入框样式 */
@@ -412,7 +872,6 @@ const handleSubmit = async () => {
   border-radius: 24rpx;
   padding: 0 24rpx;
   height: 110rpx;
-  margin-bottom: 24rpx;
   transition: all 0.3s ease;
   
   &.focused {
@@ -426,6 +885,20 @@ const handleSubmit = async () => {
       transform: scale(1.1);
     }
   }
+  
+  &.error {
+    border-color: #F56C6C;
+    background: #FEF0F0;
+  }
+}
+
+/* 错误提示文字 */
+.error-text {
+  display: block;
+  font-size: 24rpx;
+  color: #F56C6C;
+  padding: 8rpx 12rpx 0;
+  line-height: 1.4;
 }
 
 .input-icon-box {
@@ -471,6 +944,35 @@ const handleSubmit = async () => {
     
     &.active {
       opacity: 0.8;
+    }
+  }
+}
+
+/* 验证码按钮 */
+.code-btn {
+  padding: 16rpx 24rpx;
+  margin-right: -12rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
+  transition: all 0.2s;
+  
+  .code-text {
+    font-size: 26rpx;
+    font-weight: 600;
+    color: #1F2937;
+    white-space: nowrap;
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &.disabled {
+    background: #E5E7EB;
+    opacity: 0.6;
+    
+    .code-text {
+      color: #9CA3AF;
     }
   }
 }

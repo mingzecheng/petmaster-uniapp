@@ -58,3 +58,24 @@ export const updateCurrentUser = (data: UserUpdate) => {
 export const changePassword = (data: { old_password: string; new_password: string }) => {
     return post<{ message: string }>('/users/me/change-password', data)
 }
+
+/**
+ * 首次设置密码（需要邮箱验证码）
+ * @param data - 设置密码数据
+ */
+export const setPassword = (data: { email: string; code: string; new_password: string }) => {
+    return post<{ message: string }>('/auth/set-password', data)
+}
+
+/**
+ * 修改密码（需要邮箱验证码）
+ * @param data - 修改密码数据
+ */
+export const changePasswordWithEmail = (data: {
+    old_password: string
+    email: string
+    code: string
+    new_password: string
+}) => {
+    return post<{ message: string }>('/auth/change-password', data)
+}

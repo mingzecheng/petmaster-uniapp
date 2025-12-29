@@ -5,7 +5,7 @@
 import { get, post, put, del } from '@/utils/request'
 
 /** 预约状态 */
-export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'refunded'
 
 /** 预约信息 */
 export interface Appointment {
@@ -13,7 +13,10 @@ export interface Appointment {
     pet_id: number
     service_id: number
     appointment_time: string
+    payment_id?: number
+    price?: number
     status: AppointmentStatus
+    cancel_reason?: string
     notes?: string
     created_at: string
     updated_at?: string
@@ -44,9 +47,18 @@ export interface AppointmentUpdate {
     notes?: string
 }
 
-/**
- * 获取预约列表
- */
+/** 取消预约请求 */
+export interface CancelAppointmentRequest {
+    reason?: string
+}
+
+/** 取消预约响应 */
+export interface CancelAppointmentResponse {
+    success: boolean
+    message: string
+    refund_amount?: string
+}
+
 /**
  * 获取预约列表
  */
@@ -82,7 +94,9 @@ export const updateAppointment = (appointmentId: number, data: AppointmentUpdate
 /**
  * 取消预约
  * @param appointmentId - 预约ID
+ * @param request - 取消请求
  */
-export const cancelAppointment = (appointmentId: number) => {
-    return del(`/appointments/${appointmentId}`)
+export const cancelAppointment = (appointmentId: number, request?: CancelAppointmentRequest) => {
+    return post<CancelAppointmentResponse>(`/appointments/${appointmentId}/cancel`, request || {})
 }
+

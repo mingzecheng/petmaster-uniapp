@@ -24,7 +24,8 @@
 		{
 			"path": "pages/product/detail",
 			"style": {
-				"navigationBarTitleText": "商品详情"
+				"navigationBarTitleText": "商品详情",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -37,31 +38,36 @@
 		{
 			"path": "pages/pet/detail",
 			"style": {
-				"navigationBarTitleText": "宠物详情"
+				"navigationBarTitleText": "宠物详情",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/pet/add",
 			"style": {
-				"navigationBarTitleText": "添加宠物"
+				"navigationBarTitleText": "添加宠物",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/pet/edit",
 			"style": {
-				"navigationBarTitleText": "编辑宠物"
+				"navigationBarTitleText": "编辑宠物",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/appointment/list",
 			"style": {
-				"navigationBarTitleText": "我的预约"
+				"navigationBarTitleText": "我的预约",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/appointment/create",
 			"style": {
-				"navigationBarTitleText": "预约服务"
+				"navigationBarTitleText": "预约服务",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -74,7 +80,8 @@
 		{
 			"path": "pages/member/index",
 			"style": {
-				"navigationBarTitleText": "我的会员卡"
+				"navigationBarTitleText": "我的会员卡",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -86,19 +93,22 @@
 		{
 			"path": "pages/records/index",
 			"style": {
-				"navigationBarTitleText": "消费记录"
+				"navigationBarTitleText": "消费记录",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/password/index",
 			"style": {
-				"navigationBarTitleText": "修改密码"
+				"navigationBarTitleText": "修改密码",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/profile/index",
 			"style": {
-				"navigationBarTitleText": "编辑资料"
+				"navigationBarTitleText": "编辑资料",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -112,6 +122,13 @@
 			"path": "pages/payment/mock",
 			"style": {
 				"navigationBarTitleText": "模拟支付",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/payment/options",
+			"style": {
+				"navigationBarTitleText": "支付方式",
 				"navigationStyle": "custom"
 			}
 		},
@@ -140,13 +157,6 @@
 			"path": "pages/order/detail",
 			"style": {
 				"navigationBarTitleText": "订单详情",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/order/checkout",
-			"style": {
-				"navigationBarTitleText": "确认订单",
 				"navigationStyle": "custom"
 			}
 		},

@@ -313,7 +313,7 @@ const handleCancel = () => {
 /* 内容滚动 */
 .content-scroll {
   padding: 32rpx;
-  padding-top: calc(var(--status-bar-height, 44px) + 120rpx);
+  padding-top: calc(var(--status-bar-height, 44px) + 140rpx);
   padding-bottom: 200rpx;
 }
 

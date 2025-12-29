@@ -107,7 +107,14 @@ const loadOrders = async () => {
  * 返回
  */
 const goBack = () => {
-  uni.navigateBack()
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    // 导航栈有多个页面,可以正常返回
+    uni.navigateBack()
+  } else {
+    // 导航栈只有一个页面,返回到"我的"页面
+    uni.switchTab({ url: '/pages/mine/index' })
+  }
 }
 
 /**
@@ -226,7 +233,7 @@ page {
 
 /* 内容区域 */
 .content-wrapper {
-  padding-top: calc(var(--status-bar-height, 44px) + 120rpx);
+  padding-top: calc(var(--status-bar-height, 44px) + 140rpx);
   padding-left: 24rpx;
   padding-right: 24rpx;
 }

@@ -354,7 +354,8 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    await createBoarding({
+    // 创建寄养
+    const boarding = await createBoarding({
       pet_id: selectedPetId.value,
       start_date: startDate.value,
       end_date: endDate.value,
@@ -362,13 +363,23 @@ const handleSubmit = async () => {
       notes: notes.value || undefined
     })
 
-    uni.showToast({ title: '预约成功', icon: 'success' })
+    uni.showToast({ title: '寄养创建成功', icon: 'success', duration: 1500 })
+
+    // 获取宠物信息
+    const pet = pets.value.find(p => p.id === selectedPetId.value)
+    
+    // 跳转到支付选项页面
     setTimeout(() => {
-      uni.navigateTo({ url: '/pages/boarding/list' })
-    }, 1000)
+      uni.navigateTo({
+        url: `/pages/payment/options?amount=${totalCost.value}&subject=${encodeURIComponent(`宠物寄养 - ${pet?.name || '爱宠'}`)}&related_id=${boarding.id}&related_type=boarding`
+      })
+    }, 1500)
   } catch (error) {
     console.error('创建寄养失败:', error)
-    uni.showToast({ title: '提交失败', icon: 'none' })
+    uni.showToast({ 
+      title: error instanceof Error ? error.message : '提交失败，请重试', 
+      icon: 'none' 
+    })
   } finally {
     loading.value = false
   }

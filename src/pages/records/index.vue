@@ -36,9 +36,13 @@
             <view class="record-info">
               <text class="record-title">{{ record.subject }}</text>
               <text class="record-time">{{ formatTime(record.created_at) }}</text>
+              <!-- 全额抵扣的详情 -->
+              <text v-if="isFullyPaid(record)" class="record-deduction">
+                {{ record.description }}
+              </text>
             </view>
             <view class="record-right">
-              <text class="record-amount" :class="{ refund: record.status === 'cancelled' }">
+              <text class="record-amount" :class="{ refund: record.status === 'cancelled', fully_paid: isFullyPaid(record) }">
                 {{ record.status === 'cancelled' ? '' : '-' }}¥{{ record.amount }}
               </text>
               <view class="record-status" :class="record.status">
@@ -82,7 +86,8 @@ const filterTabs = [
   { label: '全部', value: '' },
   { label: '充值', value: 'member_card_recharge' },
   { label: '商品', value: 'product' },
-  { label: '预约', value: 'appointment' }
+  { label: '预约', value: 'appointment' },
+  { label: '寄养', value: 'boarding' }
 ]
 
 /** 当前筛选 */
@@ -151,7 +156,8 @@ const getTypeIcon = (type?: string): string => {
   const icons: Record<string, string> = {
     'member_card_recharge': '💳',
     'product': '🛍️',
-    'appointment': '📅'
+    'appointment': '📅',
+    'boarding': '🏠'
   }
   return icons[type || ''] || '💰'
 }
@@ -163,7 +169,8 @@ const getTypeClass = (type?: string): string => {
   const classes: Record<string, string> = {
     'member_card_recharge': 'recharge',
     'product': 'product',
-    'appointment': 'appointment'
+    'appointment': 'appointment',
+    'boarding': 'boarding'
   }
   return classes[type || ''] || ''
 }
@@ -191,6 +198,13 @@ const formatTime = (timeStr: string): string => {
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
   return `${month}-${day} ${hours}:${minutes}`
+}
+
+/**
+ * 判断是否为全额抵扣
+ */
+const isFullyPaid = (record: PaymentRecord): boolean => {
+  return record.description?.includes('全额抵扣') || false
 }
 </script>
 
@@ -249,7 +263,7 @@ const formatTime = (timeStr: string): string => {
 
 /* 内容区域 */
 .content-area {
-  padding-top: calc(var(--status-bar-height, 44px) + 100rpx);
+  padding-top: calc(var(--status-bar-height, 44px) + 132rpx);
 }
 
 /* 筛选标签 */
@@ -317,6 +331,7 @@ const formatTime = (timeStr: string): string => {
   &.recharge { background: #FEF3C7; }
   &.product { background: #DBEAFE; }
   &.appointment { background: #D1FAE5; }
+  &.boarding { background: #FCE7F3; }
 }
 
 .record-info {
@@ -336,6 +351,17 @@ const formatTime = (timeStr: string): string => {
   color: #9CA3AF;
 }
 
+.record-deduction {
+  display: block;
+  font-size: 20rpx;
+  color: #F59E0B;
+  margin-top: 6rpx;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4rpx 8rpx;
+  border-radius: 6rpx;
+  display: inline-block;
+}
+
 .record-right {
   text-align: right;
 }
@@ -349,6 +375,10 @@ const formatTime = (timeStr: string): string => {
   
   &.refund {
     color: #10B981;
+  }
+  
+  &.fully_paid {
+    color: #F59E0B;
   }
 }
 

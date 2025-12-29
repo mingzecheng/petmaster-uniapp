@@ -5,18 +5,20 @@
 import { get, post, del, patch } from '@/utils/request'
 
 /** 寄养状态 */
-export type BoardingStatus = 'pending' | 'active' | 'completed' | 'cancelled'
+export type BoardingStatus = 'pending' | 'active' | 'completed' | 'cancelled' | 'refunded'
 
 /** 寄养信息 */
 export interface Boarding {
     id: number
     pet_id: number
+    payment_id?: number
     start_date: string
     end_date: string
     daily_rate: number | string
     total_cost: number | string
     status: BoardingStatus
     notes?: string
+    cancel_reason?: string
     created_at: string
     updated_at: string
     pet?: {
@@ -34,6 +36,18 @@ export interface BoardingCreate {
     end_date: string
     daily_rate?: number
     notes?: string
+}
+
+/** 取消寄养请求 */
+export interface CancelBoardingRequest {
+    reason?: string
+}
+
+/** 取消寄养响应 */
+export interface CancelBoardingResponse {
+    success: boolean
+    message: string
+    refund_amount?: string
 }
 
 /**
@@ -67,7 +81,9 @@ export const createBoarding = (data: BoardingCreate) => {
 /**
  * 取消寄养
  * @param boardingId - 寄养ID
+ * @param request - 取消请求
  */
-export const cancelBoarding = (boardingId: number) => {
-    return patch<Boarding>(`/boarding/${boardingId}/cancel`, {})
+export const cancelBoarding = (boardingId: number, request?: CancelBoardingRequest) => {
+    return post<CancelBoardingResponse>(`/boarding/${boardingId}/cancel`, request || {})
 }
+

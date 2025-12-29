@@ -44,12 +44,18 @@ export interface PaymentStatusResponse {
 }
 
 /**
- * 创建支付宝支付请求
+ * 创建支付请求（Mock模式）
  * @param data - 支付数据
  */
-export const createAlipayPayment = (data: PaymentCreate) => {
-    return post<PaymentResponse>('/payments/alipay/create', data)
+export const createPayment = (data: PaymentCreate) => {
+    return post<PaymentResponse>('/payments/create', data)
 }
+
+/**
+ * 创建支付宝支付请求（已弃用，保留向后兼容）
+ * @deprecated 请使用 createPayment 代替
+ */
+export const createAlipayPayment = createPayment
 
 /**
  * 查询支付状态
@@ -89,4 +95,34 @@ export interface PaymentRecord {
  */
 export const getPaymentRecords = (params?: { skip?: number; limit?: number }) => {
     return get<PaymentRecord[]>('/payments/', params)
+}
+
+/** 组合支付请求参数 */
+export interface CombinedPaymentRequest {
+    amount: number
+    subject: string
+    related_id: number
+    related_type: 'appointment' | 'boarding' | 'product'
+    use_card_balance?: boolean  // 是否使用会员卡余额，默认true
+    use_points?: number  // 使用积分数量，默认0
+}
+
+/** 组合支付响应 */
+export interface CombinedPaymentResponse {
+    points_used: number
+    points_deduction: number
+    card_used: number
+    alipay_amount: number
+    pay_url?: string
+    out_trade_no?: string
+    payment_id?: number
+    fully_paid: boolean
+}
+
+/**
+ * 创建组合支付（会员卡余额+支付宝）
+ * @param data - 支付数据
+ */
+export const createCombinedPayment = (data: CombinedPaymentRequest) => {
+    return post<CombinedPaymentResponse>('/payments/combined', data)
 }

@@ -264,9 +264,8 @@ const handleDelete = () => {
   width: 72rpx;
 }
 
-/* 宠物头部卡片 */
 .pet-header-card {
-  margin-top: calc(var(--status-bar-height, 44px) + 100rpx);
+  margin-top: calc(var(--status-bar-height, 44px) + 140rpx);
   margin-left: 32rpx;
   margin-right: 32rpx;
   background: linear-gradient(135deg, #1F2937 0%, #111827 100%);

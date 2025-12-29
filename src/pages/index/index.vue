@@ -17,7 +17,7 @@
     </view>
 
     <!-- 主要内容区域 -->
-    <scroll-view class="main-content" scroll-y :style="{ paddingTop: (statusBarHeight + 56) + 'px' }">
+    <scroll-view class="main-content" scroll-y :style="{ paddingTop: (statusBarHeight + 68) + 'px' }">
       <!-- 宠物状态卡片 - 品牌黄风格 -->
       <view class="pet-status-card" v-if="userPet" @click="goToPetDetail(userPet.id)">
         <view class="pet-card-content">
@@ -54,6 +54,30 @@
         </view>
         <view class="welcome-icon">
           <text>🐾</text>
+        </view>
+      </view>
+
+      <!-- 寄养服务推广卡片 -->
+      <view class="boarding-promo-card" @click="goToBoarding">
+        <view class="promo-content">
+          <view class="promo-header">
+            <view class="promo-icon">🏠</view>
+            <view class="promo-title-section">
+              <text class="promo-title">宠物寄养服务</text>
+              <text class="promo-subtitle">专业看护 · 温馨环境 · 24小时监护</text>
+            </view>
+          </view>
+          <view class="promo-footer">
+            <view class="price-section">
+              <text class="price-label">每日</text>
+              <text class="price-value">¥120</text>
+              <text class="price-unit">起</text>
+            </view>
+            <view class="promo-btn">
+              <text>立即预约</text>
+              <text class="arrow">→</text>
+            </view>
+          </view>
         </view>
       </view>
 
@@ -424,6 +448,14 @@ const goToPetAdd = () => {
 }
 
 /**
+ * 跳转到寄养创建
+ */
+const goToBoarding = () => {
+  if (!userStore.checkAuth()) return
+  uni.navigateTo({ url: '/pages/boarding/create' })
+}
+
+/**
  * 快速购买商品
  */
 const handleQuickBuy = (product: Product) => {
@@ -530,21 +562,20 @@ const handleQuickBuy = (product: Product) => {
 .location-icon {
   width: 56rpx;
   height: 56rpx;
-  background: linear-gradient(135deg, #FFD700 0%, #FFB300 100%);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28rpx;
-  box-shadow: 0 4rpx 12rpx rgba(255, 179, 0, 0.3);
-  color: #fff;
-  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  text-shadow: none;
 }
 
 .location-text {
   font-size: 28rpx;
   font-weight: 700;
-  color: $pet-text-main;
+  color: #1F2937;
   letter-spacing: 0.5rpx;
 }
 
@@ -772,6 +803,7 @@ const handleQuickBuy = (product: Product) => {
   font-weight: 800;
   background: linear-gradient(to right, #FFF, #E5E7EB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 16rpx;
 }
@@ -822,6 +854,143 @@ const handleQuickBuy = (product: Product) => {
   border: 2rpx solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 40rpx rgba(255, 255, 255, 0.05);
   animation: float 4s ease-in-out infinite;
+}
+
+/* 寄养服务推广卡片 */
+.boarding-promo-card {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  border-radius: 32rpx;
+  padding: 40rpx;
+  margin-bottom: 56rpx;
+  box-shadow: 0 16rpx 48rpx rgba(245, 124, 0, 0.25), inset 0 2rpx 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  
+  &:active {
+    transform: scale(0.98);
+  }
+  
+  // 装饰背景光晕
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -15%;
+    width: 400rpx;
+    height: 400rpx;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(15px);
+  }
+}
+
+.promo-content {
+  position: relative;
+  z-index: 1;
+}
+
+.promo-header {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 32rpx;
+}
+
+.promo-icon {
+  width: 88rpx;
+  height: 88rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.promo-title-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.promo-title {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.5rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+.promo-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  letter-spacing: 0.5rpx;
+}
+
+.promo-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price-section {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
+.price-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.price-value {
+  font-size: 56rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -1rpx;
+  font-family: 'Outfit', sans-serif;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+.price-unit {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.promo-btn {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18rpx 32rpx;
+  border-radius: 100rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+  gap: 8rpx;
+  
+  &:active {
+    transform: scale(0.95);
+    background: #FFFFFF;
+  }
+  
+  text {
+    font-size: 28rpx;
+    font-weight: 700;
+    color: #E65100;
+  }
+  
+  .arrow {
+    font-size: 32rpx;
+    font-weight: 400;
+  }
 }
 
 /* 区块样式 */
@@ -972,21 +1141,13 @@ const handleQuickBuy = (product: Product) => {
     background: radial-gradient(circle at top left, rgba(255,255,255,0.8), transparent);
   }
   
-  &.color-sky {
-    background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
-    color: #0284C7;
-  }
-  &.color-purple {
-    background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);
-    color: #9333EA;
-  }
-  &.color-orange {
-    background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%);
-    color: #EA580C;
-  }
+  /* 统一黄色系背景 */
+  &.color-sky,
+  &.color-purple,
+  &.color-orange,
   &.color-green {
-    background: linear-gradient(135deg, #ECFDF5 0%, #A7F3D0 100%);
-    color: #059669;
+    background: linear-gradient(135deg, #FFF9E6 0%, #FEF3C7 100%);
+    color: #D97706;
   }
 }
 
@@ -1079,18 +1240,20 @@ const handleQuickBuy = (product: Product) => {
   border: 1rpx solid rgba(0, 0, 0, 0.02);
   flex-shrink: 0;
   
-  /* 背景色渐变 */
-  &.bg-food { background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); }
-  &.bg-toy { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); }
-  &.bg-supply { background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); }
-  &.bg-cloth { background: linear-gradient(135deg, #FDF4FF 0%, #FAE8FF 100%); }
-  &.bg-medicine { background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); }
-  &.bg-default { background: linear-gradient(135deg, #FAFAFA 0%, #F1F5F9 100%); }
+  /* 统一黄色系背景 */
+  &.bg-food,
+  &.bg-toy,
+  &.bg-supply,
+  &.bg-cloth,
+  &.bg-medicine,
+  &.bg-default { 
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); 
+  }
 }
 
 .product-icon {
-  font-size: 80rpx;
-  filter: drop-shadow(0 8rpx 12rpx rgba(0,0,0,0.06));
+  font-size: 100rpx;
+  filter: drop-shadow(0 8rpx 16rpx rgba(251, 191, 36, 0.3));
 }
 
 /* 库存徽章 */

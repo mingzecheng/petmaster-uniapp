@@ -8,7 +8,7 @@ import { getToken, clearAuth } from './storage'
 /**
  * 获取API基础URL
  * - H5开发环境：使用相对路径，让Vite代理生效
- * - H5生产环境/小程序：使用完整的后端地址
+ * - H5生产环境/小程序：从环境变量读取后端地址
  */
 const getBaseUrl = (): string => {
     // #ifdef H5
@@ -16,8 +16,8 @@ const getBaseUrl = (): string => {
     if (import.meta.env.DEV) {
         return '/api/v1'
     }
-    // H5 生产环境，使用实际后端地址
-    return 'http://127.0.0.1:8001/api/v1'
+    // H5 生产环境，从环境变量读取后端地址
+    return import.meta.env.VITE_API_BASE_URL || 'https://petmaster-api.zeabur.app/api/v1'
 }
 
 /** API基础URL */

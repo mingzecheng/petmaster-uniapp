@@ -72,18 +72,32 @@
 
       <!-- 金额汇总卡片 -->
       <view class="summary-card">
-        <view class="summary-row">
-          <text class="summary-label">商品总额</text>
+        <view class="summary-row" v-if="order.original_amount">
+          <text class="summary-label">商品原价</text>
           <view class="summary-value">
             <text class="currency">¥</text>
-            <text class="amount">{{ order.total_amount }}</text>
+            <text class="amount">{{ order.original_amount }}</text>
+          </view>
+        </view>
+        <view class="summary-row discount" v-if="order.member_discount && order.member_discount > 0">
+          <text class="summary-label">会员折扣</text>
+          <view class="summary-value">
+            <text class="currency discount">-¥</text>
+            <text class="amount discount">{{ order.member_discount }}</text>
+          </view>
+        </view>
+        <view class="summary-row discount" v-if="order.points_used && order.points_used > 0">
+          <text class="summary-label">积分抵扣 ({{ order.points_used }}分)</text>
+          <view class="summary-value">
+            <text class="currency discount">-¥</text>
+            <text class="amount discount">{{ order.points_discount || (order.points_used / 100).toFixed(2) }}</text>
           </view>
         </view>
         <view class="summary-row total">
-          <text class="summary-label">订单总额</text>
+          <text class="summary-label">{{ order.status === 'paid' ? '实付金额' : '应付金额' }}</text>
           <view class="summary-value">
             <text class="currency primary">¥</text>
-            <text class="amount primary">{{ order.total_amount }}</text>
+            <text class="amount primary">{{ getPaymentAmount() }}</text>
           </view>
         </view>
       </view>
@@ -188,6 +202,33 @@ const getStatusText = (status: string): string => {
 }
 
 /**
+ * 获取支付金额
+ * 已支付订单：使用 paid_amount（来自 payment.amount，数据库字段）
+ * 未支付订单：使用 total_amount（订单应付总额）
+ */
+const getPaymentAmount = (): string => {
+  if (!order.value) return '0.00'
+  
+  // 已支付订单：必须使用 paid_amount（来自数据库）
+  if (order.value.status === 'paid') {
+    if (order.value.paid_amount === null || order.value.paid_amount === undefined) {
+      console.error('已支付订单缺少 paid_amount 字段')
+      return '数据异常'
+    }
+    const amount = typeof order.value.paid_amount === 'string' 
+      ? parseFloat(order.value.paid_amount) 
+      : order.value.paid_amount
+    return amount.toFixed(2)
+  }
+  
+  // 未支付订单：使用 total_amount（应付总额）
+  const total = typeof order.value.total_amount === 'string' 
+    ? parseFloat(order.value.total_amount) 
+    : order.value.total_amount
+  return total.toFixed(2)
+}
+
+/**
  * 格式化日期
  */
 const formatDate = (dateStr: string): string => {
@@ -260,7 +301,7 @@ page {
 
 /* 内容区域 */
 .content-wrapper {
-  padding-top: calc(var(--status-bar-height, 44px) + 120rpx);
+  padding-top: calc(var(--status-bar-height, 44px) + 140rpx);
   padding-left: 24rpx;
   padding-right: 24rpx;
   display: flex;
@@ -463,6 +504,10 @@ page {
     &.primary {
       color: #F97316;
     }
+    
+    &.discount {
+      color: #10B981;
+    }
   }
   
   .amount {
@@ -474,6 +519,10 @@ page {
     &.primary {
       font-size: 40rpx;
       color: #F97316;
+    }
+    
+    &.discount {
+      color: #10B981;
     }
   }
 }

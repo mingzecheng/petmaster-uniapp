@@ -154,7 +154,14 @@ const userStore = useUserStore()
  * 返回
  */
 const goBack = () => {
-  uni.navigateBack()
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    // 导航栈有多个页面,可以正常返回
+    uni.navigateBack()
+  } else {
+    // 导航栈只有一个页面,返回到"我的"页面
+    uni.switchTab({ url: '/pages/mine/index' })
+  }
 }
 
 /**
@@ -372,7 +379,7 @@ const goToCreate = () => {
 
 /* 内容区域 */
 .content-area {
-  padding-top: calc(var(--status-bar-height, 44px) + 100rpx);
+  padding-top: calc(var(--status-bar-height, 44px) + 140rpx);
 }
 
 /* 筛选标签 */

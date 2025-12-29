@@ -429,19 +429,34 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    await createAppointment({
+    // 1. 创建预约
+    const appointment = await createAppointment({
       pet_id: selectedPetId.value,
       service_id: selectedServiceId.value,
       appointment_time: appointmentTime,
       notes: notes.value || undefined
     })
 
-    uni.showToast({ title: '预约成功', icon: 'success' })
+    uni.showToast({ title: '预约创建成功', icon: 'success', duration: 1500 })
+
+    // 获取服务信息
+    const service = currentService.value
+    if (!service) {
+      throw new Error('服务信息不存在')
+    }
+
+    // 跳转到支付选项页面
     setTimeout(() => {
-      uni.navigateTo({ url: '/pages/appointment/list' })
-    }, 1000)
+      uni.navigateTo({
+        url: `/pages/payment/options?amount=${service.price}&subject=${encodeURIComponent(`预约服务 - ${service.name}`)}&related_id=${appointment.id}&related_type=appointment`
+      })
+    }, 1500)
   } catch (error) {
     console.error('预约失败:', error)
+    uni.showToast({ 
+      title: error instanceof Error ? error.message : '预约失败，请重试', 
+      icon: 'none' 
+    })
   } finally {
     loading.value = false
   }

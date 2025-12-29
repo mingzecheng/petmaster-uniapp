@@ -233,9 +233,8 @@ const goToRecharge = () => {
 
 /* 内容区域 */
 .content-area {
-  padding-top: calc(var(--status-bar-height, 44px) + 100rpx);
   padding: 32rpx;
-  padding-top: calc(var(--status-bar-height, 44px) + 120rpx);
+  padding-top: calc(var(--status-bar-height, 44px) + 140rpx);
 }
 
 /* 会员卡区域 */

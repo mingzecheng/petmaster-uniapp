@@ -22,7 +22,7 @@ export interface Product {
  * 获取商品列表
  */
 export const getProducts = (params?: { skip?: number; limit?: number; category?: string; name?: string }) => {
-    return get<Product[]>('/products', params)
+    return get<Product[]>('/products/', params)
 }
 
 /**

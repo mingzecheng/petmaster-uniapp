@@ -85,26 +85,24 @@
           <text v-if="errors.password" class="error-text">{{ errors.password }}</text>
         </view>
 
-        <!-- 注册模式额外字段 -->
         <template v-if="isRegister">
           <view class="input-wrapper">
-            <view class="input-group" :class="{ 'focused': focusedField === 'mobile', 'error': errors.mobile }">
+            <view class="input-group" :class="{ 'focused': focusedField === 'registerEmail', 'error': errors.registerEmail }">
               <view class="input-icon-box">
-                <text class="input-icon">📱</text>
+                <text class="input-icon">📧</text>
               </view>
               <input
-                type="number"
-                v-model="formData.mobile"
-                placeholder="手机号"
+                type="text"
+                v-model="formData.registerEmail"
+                placeholder="邮箱"
                 placeholder-class="input-placeholder"
                 class="input-field"
-                maxlength="11"
-                @focus="focusedField = 'mobile'"
-                @blur="validateField('mobile')"
-                @input="clearError('mobile')"
+                @focus="focusedField = 'registerEmail'"
+                @blur="validateField('registerEmail')"
+                @input="clearError('registerEmail')"
               />
             </view>
-            <text v-if="errors.mobile" class="error-text">{{ errors.mobile }}</text>
+            <text v-if="errors.registerEmail" class="error-text">{{ errors.registerEmail }}</text>
           </view>
         </template>
 
@@ -212,14 +210,14 @@ import { useRecaptcha } from '@/composables/useRecaptcha'
 const formData = reactive({
   username: '',
   password: '',
-  mobile: ''
+  registerEmail: ''  // 注册时的邮箱（可选）
 })
 
 /** 表单错误信息 */
 const errors = reactive({
   username: '',
   password: '',
-  mobile: '',
+  registerEmail: '',  // 注册时邮箱的错误
   email: '',
   code: ''
 })
@@ -314,13 +312,13 @@ const toggleMode = () => {
   // 清空所有表单
   formData.username = ''
   formData.password = ''
-  formData.mobile = ''
+  formData.registerEmail = ''
   emailFormData.email = ''
   emailFormData.code = ''
   // 清除所有错误
   errors.username = ''
   errors.password = ''
-  errors.mobile = ''
+  errors.registerEmail = ''
   errors.email = ''
   errors.code = ''
   // 停止倒计时
@@ -337,8 +335,6 @@ const REGEX = {
   username: /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/,
   /** 密码：6-20位，必须包含字母和数字 */
   password: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,20}$/,
-  /** 手机号：11位中国大陆手机号 */
-  mobile: /^1[3-9]\d{9}$/,
   /** 邮箱 */
   email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 }
@@ -352,13 +348,13 @@ const switchLoginType = (type: 'password' | 'email') => {
   // 清空所有表单
   formData.username = ''
   formData.password = ''
-  formData.mobile = ''
+  formData.registerEmail = ''
   emailFormData.email = ''
   emailFormData.code = ''
   // 清除所有错误
   errors.username = ''
   errors.password = ''
-  errors.mobile = ''
+  errors.registerEmail = ''
   errors.email = ''
   errors.code = ''
   // 停止倒计时
@@ -400,7 +396,7 @@ const isFormValid = computed(() => {
 /**
  * 清除指定字段的错误
  */
-const clearError = (field: 'username' | 'password' | 'mobile') => {
+const clearError = (field: 'username' | 'password' | 'registerEmail') => {
   errors[field] = ''
   focusedField.value = field
 }
@@ -444,7 +440,7 @@ const validateEmailField = (field: 'email' | 'code') => {
 /**
  * 验证单个字段（失焦时触发）
  */
-const validateField = (field: 'username' | 'password' | 'mobile') => {
+const validateField = (field: 'username' | 'password' | 'registerEmail') => {
   focusedField.value = ''
   
   switch (field) {
@@ -466,15 +462,12 @@ const validateField = (field: 'username' | 'password' | 'mobile') => {
         errors.password = ''
       }
       break
-    case 'mobile':
-      if (isRegister.value) {
-        if (!formData.mobile.trim()) {
-          errors.mobile = '请输入手机号'
-        } else if (!REGEX.mobile.test(formData.mobile)) {
-          errors.mobile = '请输入正确的11位手机号'
-        } else {
-          errors.mobile = ''
-        }
+    case 'registerEmail':
+      // 注册邮箱是可选的，只有填写了才验证格式
+      if (formData.registerEmail.trim() && !REGEX.email.test(formData.registerEmail)) {
+        errors.registerEmail = '请输入有效的邮箱地址'
+      } else {
+        errors.registerEmail = ''
       }
       break
   }
@@ -504,14 +497,10 @@ const validateForm = (): boolean => {
     return false
   }
 
-  // 注册模式：手机号必填
-  if (isRegister.value) {
-    if (!formData.mobile.trim()) {
-      uni.showToast({ title: '请输入手机号', icon: 'none' })
-      return false
-    }
-    if (!REGEX.mobile.test(formData.mobile)) {
-      uni.showToast({ title: '请输入正确的11位手机号', icon: 'none' })
+  // 注册模式：邮箱是可选的，但如果填写了要验证格式
+  if (isRegister.value && formData.registerEmail.trim()) {
+    if (!REGEX.email.test(formData.registerEmail)) {
+      uni.showToast({ title: '请输入有效的邮箱地址', icon: 'none' })
       return false
     }
   }
@@ -658,7 +647,7 @@ const handleSubmit = async () => {
         const success = await userStore.register({
           username: formData.username,
           password: formData.password,
-          mobile: formData.mobile || undefined,
+          email: formData.registerEmail || undefined,
           // #ifdef H5
           recaptcha_token: recaptchaToken
           // #endif

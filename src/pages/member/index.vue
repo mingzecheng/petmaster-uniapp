@@ -43,7 +43,10 @@
         <view class="no-card-card">
           <text class="no-card-icon">💳</text>
           <text class="no-card-title">暂无会员卡</text>
-          <text class="no-card-desc">请联系店员办理会员卡</text>
+          <text class="no-card-desc">立即开通会员卡，享受专属优惠</text>
+          <button class="apply-btn" :loading="applyLoading" @click="handleApplyCard">
+            <text v-if="!applyLoading">🎉 立即开卡</text>
+          </button>
         </view>
       </view>
 
@@ -86,7 +89,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { getMyMemberCard, getRechargeRecords, type MemberCard, type RechargeRecord } from '@/api/member'
+import { getMyMemberCard, getRechargeRecords, applyMemberCard, type MemberCard, type RechargeRecord } from '@/api/member'
 import { useUserStore } from '@/stores/user'
 
 /** 会员卡信息 */
@@ -94,6 +97,9 @@ const memberCard = ref<MemberCard | null>(null)
 
 /** 充值记录 */
 const records = ref<RechargeRecord[]>([])
+
+/** 开卡加载状态 */
+const applyLoading = ref(false)
 
 /** 用户Store */
 const userStore = useUserStore()
@@ -174,6 +180,31 @@ const formatTime = (timeStr: string): string => {
 const goToRecharge = () => {
   if (memberCard.value) {
     uni.navigateTo({ url: `/pages/member/recharge?cardId=${memberCard.value.id}` })
+  }
+}
+
+/**
+ * 处理开卡
+ */
+const handleApplyCard = async () => {
+  if (!userStore.isLoggedIn) {
+    uni.showToast({ title: '请先登录', icon: 'none' })
+    return
+  }
+  
+  applyLoading.value = true
+  try {
+    const card = await applyMemberCard()
+    memberCard.value = card
+    uni.showToast({ title: '开卡成功！', icon: 'success' })
+  } catch (error: any) {
+    uni.showToast({ 
+      title: error.message || '开卡失败', 
+      icon: 'none',
+      duration: 2000
+    })
+  } finally {
+    applyLoading.value = false
   }
 }
 </script>
@@ -357,6 +388,28 @@ const goToRecharge = () => {
 .no-card-desc {
   font-size: 26rpx;
   color: #9CA3AF;
+  display: block;
+  margin-bottom: 32rpx;
+}
+
+.apply-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 320rpx;
+  height: 88rpx;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8F00 100%);
+  border-radius: 44rpx;
+  box-shadow: 0 12rpx 32rpx rgba(251, 191, 36, 0.35);
+  
+  &::after { border: none; }
+  
+  text {
+    font-size: 30rpx;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
 }
 
 /* 充值按钮 */

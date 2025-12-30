@@ -14,7 +14,6 @@ export interface LoginResponse {
 export interface UserResponse {
     id: number
     username: string
-    mobile?: string
     email?: string
     role: string
     avatar?: string
@@ -34,7 +33,7 @@ export const login = (data: { username: string; password: string; recaptcha_toke
  * 用户注册
  * @param data - 注册数据
  */
-export const register = (data: { username: string; password: string; mobile?: string; email?: string }) => {
+export const register = (data: { username: string; password: string; email?: string }) => {
     return post<UserResponse>('/auth/register', data)
 }
 

@@ -11,7 +11,6 @@ import { post, get } from '@/utils/request'
 export interface UserInfo {
     id: number
     username: string
-    mobile?: string
     email?: string
     role: 'admin' | 'staff' | 'member'
     avatar?: string
@@ -41,7 +40,6 @@ export interface LoginForm {
 export interface RegisterForm {
     username: string
     password: string
-    mobile?: string
     email?: string
     recaptcha_token?: string
 }

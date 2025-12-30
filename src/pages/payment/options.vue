@@ -92,15 +92,17 @@
           <view class="header-left">
             <text class="section-icon">💳</text>
             <text class="section-title">会员卡余额</text>
+            <text v-if="cardStatus === 'frozen'" class="status-badge frozen">已冻结</text>
           </view>
           <switch 
             :checked="useCardBalance" 
+            :disabled="cardStatus !== 'active'"
             @change="toggleCardBalance"
             color="#4ECDC4"
           />
         </view>
         
-        <view v-if="useCardBalance" class="section-content">
+        <view v-if="cardStatus === 'active' && useCardBalance" class="section-content">
           <view class="card-info">
             <text class="info-label">当前余额</text>
             <text class="info-value">¥{{ cardBalance.toFixed(2) }}</text>
@@ -110,6 +112,11 @@
             <text class="preview-label">抵扣金额</text>
             <text class="preview-value">- ¥{{ cardDeduction.toFixed(2) }}</text>
           </view>
+        </view>
+        
+        <view v-if="cardStatus === 'frozen'" class="frozen-tip">
+          <text class="tip-icon">🔒</text>
+          <text class="tip-text">会员卡已冻结，无法使用余额支付</text>
         </view>
       </view>
 
@@ -180,6 +187,7 @@ const relatedType = ref<'appointment' | 'boarding'>('appointment')
 // 用户资产
 const userPoints = ref(0)
 const cardBalance = ref(0)
+const cardStatus = ref<'active' | 'frozen' | 'cancelled' | null>(null)
 
 // 支付选项
 const usePoints = ref(false)
@@ -349,6 +357,12 @@ onMounted(async () => {
       const card = await getMyMemberCard(userStore.userInfo.id)
       if (card && card.balance) {
         cardBalance.value = parseFloat(card.balance.toString())
+        cardStatus.value = card.status
+        
+        // 如果卡已冻结或注销，禁用会员卡余额选项
+        if (card.status !== 'active') {
+          useCardBalance.value = false
+        }
       }
     } catch (error) {
       console.log('获取会员卡失败:', error)
@@ -502,6 +516,41 @@ onMounted(async () => {
   font-size: 32rpx;
   font-weight: 600;
   color: #2d3748;
+}
+
+/* 状态徽章 */
+.status-badge {
+  margin-left: 8rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  
+  &.frozen {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+  }
+}
+
+/* 冻结提示 */
+.frozen-tip {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 24rpx;
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 12rpx;
+  margin-top: 16rpx;
+  
+  .tip-icon {
+    font-size: 32rpx;
+  }
+  
+  .tip-text {
+    flex: 1;
+    font-size: 26rpx;
+    color: #991B1B;
+    line-height: 1.5;
+  }
 }
 
 .section-content {

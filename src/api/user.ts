@@ -8,7 +8,6 @@ import { get, put, post } from '@/utils/request'
 export interface User {
     id: number
     username: string
-    mobile?: string
     email?: string
     role: string
     avatar?: string
@@ -23,7 +22,6 @@ export interface User {
 /** 用户更新参数 */
 export interface UserUpdate {
     username?: string
-    mobile?: string
     email?: string
     avatar?: string
 }

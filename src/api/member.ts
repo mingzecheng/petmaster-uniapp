@@ -68,6 +68,13 @@ export const getMyMemberCard = (userId: number) => {
 }
 
 /**
+ * 用户自助开通会员卡
+ */
+export const applyMemberCard = () => {
+    return post<MemberCard>('/member_cards/apply')
+}
+
+/**
  * 获取会员卡充值记录
  * @param cardId - 会员卡ID
  */

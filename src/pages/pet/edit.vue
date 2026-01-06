@@ -17,6 +17,28 @@
           <text class="card-title">基本信息</text>
         </view>
         
+        <!-- 头像上传区域 -->
+        <view class="avatar-upload-section">
+          <view class="avatar-container" @click="handleChooseImage">
+            <image 
+              v-if="petAvatar"
+              :src="petAvatar" 
+              class="pet-avatar-image"
+              mode="aspectFill"
+            />
+            <view v-else class="avatar-placeholder">
+              <text class="avatar-icon">📷</text>
+              <text class="avatar-hint">点击上传头像</text>
+            </view>
+            <view class="avatar-edit-badge">
+              <text>编辑</text>
+            </view>
+          </view>
+          <view v-if="uploadProgress > 0 && uploadProgress < 100" class="upload-progress">
+            <text>上传中 {{ uploadProgress }}%</text>
+          </view>
+        </view>
+        
         <view class="form-item">
           <text class="form-label">宠物名称 *</text>
           <view class="input-group">
@@ -128,13 +150,20 @@
  */
 
 import { ref, reactive, onMounted, computed } from 'vue'
-import { getPetDetail, updatePet, type Pet, type PetUpdate } from '@/api/pet'
+import { getPetDetail, updatePet, uploadPetImage, type Pet, type PetUpdate } from '@/api/pet'
+import { getPetAvatar } from '@/utils/pet'
 
 /** 宠物ID */
 const petId = ref<number>(0)
 
 /** 原始宠物数据 */
 const originalPet = ref<Pet | null>(null)
+
+/** 宠物头像URL */
+const petAvatar = ref<string>('')
+
+/** 上传进度 */
+const uploadProgress = ref<number>(0)
 
 /** 表单数据 */
 const formData = reactive<PetUpdate>({
@@ -196,11 +225,61 @@ const loadPet = async (id: number) => {
     formData.weight = data.weight
     formData.health_status = data.health_status || ''
     
+    // 加载头像
+    petAvatar.value = getPetAvatar(data.image_url, data.species)
+    
     uni.hideLoading()
   } catch (error) {
     uni.hideLoading()
     console.error('加载宠物失败:', error)
     uni.showToast({ title: '宠物不存在', icon: 'none' })
+  }
+}
+
+/**
+ * 选择并上传头像
+ */
+const handleChooseImage = () => {
+  uni.chooseImage({
+    count: 1,
+    sizeType: ['compressed'],
+    sourceType: ['album', 'camera'],
+    success: (res) => {
+      const tempFilePath = res.tempFilePaths[0]
+      handleUploadImage(tempFilePath)
+    }
+  })
+}
+
+/**
+ * 上传图片
+ */
+const handleUploadImage = async (filePath: string) => {
+  try {
+    uploadProgress.value = 0
+    
+    // 显示上传中提示
+    uni.showLoading({ title: '上传中...' })
+    
+    // 上传图片
+    const result = await uploadPetImage(petId.value, filePath)
+    
+    // 上传成功
+    uploadProgress.value = 100
+    uni.hideLoading()
+    uni.showToast({ title: '上传成功', icon: 'success' })
+    
+    // 更新头像显示
+    petAvatar.value = getPetAvatar(result.image_url, result.species)
+    formData.image_url = result.image_url
+    
+    // 通知列表刷新
+    uni.$emit('refreshPets')
+  } catch (error) {
+    console.error('上传图片失败:', error)
+    uploadProgress.value = 0
+    uni.hideLoading()
+    uni.showToast({ title: '上传失败', icon: 'none' })
   }
 }
 
@@ -348,6 +427,86 @@ const handleSubmit = async () => {
   font-size: 32rpx;
   font-weight: 700;
   color: #1F2937;
+}
+
+/* 头像上传区域 */
+.avatar-upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 0;
+  margin-bottom: 32rpx;
+  border-bottom: 2rpx solid #F3F4F6;
+}
+
+.avatar-container {
+  position: relative;
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 32rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: transform 0.2s;
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.pet-avatar-image {
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.avatar-icon {
+  font-size: 64rpx;
+}
+
+.avatar-hint {
+  font-size: 24rpx;
+  color: #92400E;
+  font-weight: 600;
+}
+
+.avatar-edit-badge {
+  position: absolute;
+  bottom: 12rpx;
+  right: 12rpx;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8rpx);
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  
+  text {
+    font-size: 22rpx;
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+}
+
+.upload-progress {
+  margin-top: 16rpx;
+  padding: 8rpx 24rpx;
+  background: #FEF3C7;
+  border-radius: 16rpx;
+  
+  text {
+    font-size: 24rpx;
+    color: #92400E;
+    font-weight: 600;
+  }
 }
 
 .form-item {

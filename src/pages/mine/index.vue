@@ -67,14 +67,7 @@
           <view class="pet-item" v-for="pet in myPets" :key="pet.id" @click="goToPetDetail(pet.id)">
             <view class="pet-avatar">
               <image 
-                v-if="pet.image_url"
-                :src="pet.image_url" 
-                class="pet-image"
-                mode="aspectFill"
-              />
-              <image 
-                v-else
-                :src="getPetImage(pet.species)" 
+                :src="getPetAvatar(pet.image_url, pet.species)" 
                 class="pet-image"
                 mode="aspectFill"
               />
@@ -155,6 +148,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { getPets, type Pet } from '@/api/pet'
 import { getMyMemberCard, type MemberCard } from '@/api/member'
+import { getPetAvatar } from '@/utils/pet'
 
 /** 状态栏高度 */
 const statusBarHeight = ref(0)

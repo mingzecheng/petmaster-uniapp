@@ -46,12 +46,29 @@ export const getPetDefaultImage = (species?: string): string => {
 }
 
 /**
- * 获取宠物头像（强制使用本地静态资源）
- * @param _imageUrl - (已废弃) 以前的图片URL
- * @param species - 宠物品种
+ * 获取宠物头像URL
+ * 支持OSS完整URL、本地相对路径和默认图片
+ * @param imageUrl - 图片URL（可以是OSS完整URL或本地相对路径）
+ * @param species - 宠物品种（用于获取默认图片）
  */
-export const getPetAvatar = (_imageUrl?: string, species?: string): string => {
-    // 强制统一使用本地静态资源
+export const getPetAvatar = (imageUrl?: string, species?: string): string => {
+    // 如果有图片URL
+    if (imageUrl) {
+        // 如果是完整URL（OSS云存储），直接返回
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+            return imageUrl
+        }
+
+        // 如果是相对路径（本地存储），拼接服务器地址
+        // 从环境变量读取后端地址
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://petmaster-api.zeabur.app'
+        // 确保路径以 /uploads 开头
+        const imagePath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
+        const fullPath = imagePath.startsWith('/uploads/') ? imagePath : `/uploads/${imageUrl}`
+        return `${baseUrl}${fullPath}`
+    }
+
+    // 没有图片URL，使用默认图片
     return getPetDefaultImage(species)
 }
 

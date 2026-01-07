@@ -203,25 +203,11 @@ const getStatusText = (status: string): string => {
 
 /**
  * 获取支付金额
- * 已支付订单：使用 paid_amount（来自 payment.amount，数据库字段）
- * 未支付订单：使用 total_amount（订单应付总额）
+ * total_amount 是订单的最终应付/实付金额（已扣除会员折扣和积分）
  */
 const getPaymentAmount = (): string => {
   if (!order.value) return '0.00'
   
-  // 已支付订单：必须使用 paid_amount（来自数据库）
-  if (order.value.status === 'paid') {
-    if (order.value.paid_amount === null || order.value.paid_amount === undefined) {
-      console.error('已支付订单缺少 paid_amount 字段')
-      return '数据异常'
-    }
-    const amount = typeof order.value.paid_amount === 'string' 
-      ? parseFloat(order.value.paid_amount) 
-      : order.value.paid_amount
-    return amount.toFixed(2)
-  }
-  
-  // 未支付订单：使用 total_amount（应付总额）
   const total = typeof order.value.total_amount === 'string' 
     ? parseFloat(order.value.total_amount) 
     : order.value.total_amount

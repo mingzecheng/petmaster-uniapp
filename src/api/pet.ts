@@ -94,12 +94,15 @@ export const deletePet = (petId: number) => {
  */
 export const uploadPetImage = (petId: number, filePath: string) => {
     return new Promise<Pet>((resolve, reject) => {
+        // 从storage工具获取token
+        const token = uni.getStorageSync('pet_master_token')
+
         uni.uploadFile({
             url: `${import.meta.env.VITE_API_BASE_URL}/pets/${petId}/upload-image`,
             filePath: filePath,
             name: 'file',
             header: {
-                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                'Authorization': `Bearer ${token}`
             },
             success: (uploadFileRes) => {
                 if (uploadFileRes.statusCode === 200) {

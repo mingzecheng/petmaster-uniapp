@@ -53,7 +53,7 @@
             </view>
 
             <view class="order-amount">
-              <text class="amount-label">订单金额</text>
+              <text class="amount-label">实付金额</text>
               <view class="amount-value">
                 <text class="currency">¥</text>
                 <text class="number">{{ order.total_amount }}</text>
